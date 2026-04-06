@@ -41,7 +41,7 @@ Well, by building my personal data platform of course! We will need
 - container orchestration
     - k8s (kind and eventually k3s)
 
-![basic drawing](docs/assets/basic.excalidraw)
+![basic drawing](docs/assets/basic.png)
 
 Out of scope
 - metadata store (I know where all the tables are, I made them)
