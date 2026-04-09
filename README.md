@@ -71,7 +71,7 @@ Likely uses include
 ## Order
 
 - [ ] Stand everything up
-    - [ ] kind
+    - [x] kind
     - [ ] airflow
     - [ ] minio
     - [ ] postgres
