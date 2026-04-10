@@ -1,0 +1,36 @@
+services:
+  service:
+    build: service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./service/src:/app/src
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Web Console
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: admin
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse-server
+    ports:
+      - "8123:8123" # HTTP
+      # - "9000:9000" # Native
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    environment:
+      - CLICKHOUSE_USER=admin
+      - CLICKHOUSE_PASSWORD=admin
+    ulimits:
+      nofile: {soft: 262144, hard: 262144}
+volumes:
+  minio_data:
+  clickhouse_data:
