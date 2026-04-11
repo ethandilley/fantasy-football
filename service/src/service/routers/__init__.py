@@ -1,1 +1,1 @@
-from .health import router as health_router
+from .health_router import router as health_router
