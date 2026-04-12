@@ -53,15 +53,24 @@ def espn_stats():
             )
             ids.append(game_id)
 
-        now = datetime.now()
-        object_name = f"espn/raw/events/season={year}/week={week}/{now}.json.gz"
-        logger.info(object_name)
-        logger.info("writing")
+        object_name = f"espn/raw/events/season={year}/week={week}/data.json.gz"
         write_data("bronze", object_name, response)
-        logger.info("wrote")
         return ids
 
-    get_events()
+    @task
+    def get_stats(game_id):
+        year = 2025
+        week = 1
+        logger.info(f"processing id: {game_id}")
+        # minio path
+        # espn/raw/summary/event=401772510/2026-04-11T18:05:12Z.json.gz
+        url = f"https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event={game_id}"
+        response = requests.get(url).json()
+        object_name = f"espn/raw/stats/season={year}/week={week}/game={game_id}/data.json.gz"
+        write_data("bronze", object_name, response)
+
+    ids = get_events()
+    get_stats.expand(game_id=ids)
 
 
 espn_stats()
