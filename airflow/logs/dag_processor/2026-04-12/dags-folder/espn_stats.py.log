@@ -318,3 +318,5 @@
 {"timestamp":"2026-04-12T06:39:45.413653Z","level":"info","event":"Filling up the DagBag from /opt/airflow/dags/espn_stats.py","logger":"airflow.dag_processing.dagbag.BundleDagBag","filename":"dagbag.py","lineno":469}
 {"timestamp":"2026-04-12T06:40:15.520251Z","level":"info","event":"Filling up the DagBag from /opt/airflow/dags/espn_stats.py","logger":"airflow.dag_processing.dagbag.BundleDagBag","filename":"dagbag.py","lineno":469}
 {"timestamp":"2026-04-12T06:40:45.687014Z","level":"info","event":"Filling up the DagBag from /opt/airflow/dags/espn_stats.py","logger":"airflow.dag_processing.dagbag.BundleDagBag","filename":"dagbag.py","lineno":469}
+{"timestamp":"2026-04-12T06:41:15.867436Z","level":"info","event":"Filling up the DagBag from /opt/airflow/dags/espn_stats.py","logger":"airflow.dag_processing.dagbag.BundleDagBag","filename":"dagbag.py","lineno":469}
+{"timestamp":"2026-04-12T06:41:46.006685Z","level":"info","event":"Filling up the DagBag from /opt/airflow/dags/espn_stats.py","logger":"airflow.dag_processing.dagbag.BundleDagBag","filename":"dagbag.py","lineno":469}
