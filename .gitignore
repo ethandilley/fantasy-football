@@ -1,4 +1,5 @@
 clickhouse
+__pycache__/
 .env
 .envrc
 airflow/logs/
