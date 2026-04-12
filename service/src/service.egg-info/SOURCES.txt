@@ -1,8 +1,0 @@
-README.md
-pyproject.toml
-src/service/main.py
-src/service.egg-info/PKG-INFO
-src/service.egg-info/SOURCES.txt
-src/service.egg-info/dependency_links.txt
-src/service.egg-info/requires.txt
-src/service.egg-info/top_level.txt

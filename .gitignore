@@ -1,5 +1,6 @@
 clickhouse
 __pycache__/
+*.egg-info/
 .env
 .envrc
 airflow/logs/
