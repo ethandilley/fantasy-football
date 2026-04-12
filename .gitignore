@@ -1,5 +1,5 @@
 clickhouse
-__pycache__/
+**/__pycache__/
 *.egg-info/
 .env
 .envrc
