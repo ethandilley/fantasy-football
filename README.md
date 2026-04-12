@@ -27,6 +27,8 @@ Anything.
 - prior drafts
 - betting lines
 
+starting with [the espn api](https://github.com/pseudo-r/Public-ESPN-API/tree/main)
+
 ## How are you going to do this?
 
 Well, by building my personal data platform of course! We will need
