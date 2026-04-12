@@ -1,90 +1,140 @@
-from datetime import datetime
-import json
-import io
 from minio import Minio
-import requests
+from dataclasses import dataclass
+import json
 import gzip
 
 
+@dataclass
+class PlayerGameStats:
+    # identity
+    player_id: int
+    game_id: int | None
+    season: int | None
+    week: int | None
+    team_id: int | None
+    opponent_team_id: int | None
+
+    # passing
+    passing_attempts: int | None
+    passing_completions: int | None
+    passing_yards: int | None
+    passing_tds: int | None
+    interceptions: int | None
+
+    # rushing
+    rushing_attempts: int | None
+    rushing_yards: int | None
+    rushing_tds: int | None
+
+    # receiving
+    targets: int | None
+    receptions: int | None
+    receiving_yards: int | None
+    receiving_tds: int | None
+
+    # fumbles
+    fumbles: int | None
+    fumbles_lost: int | None
+
+
+year = 2025
+week = 1
+
+# task to get game data from minio
 client = Minio(
-    "localhost:9000", access_key="minioadmin", secret_key="minioadmin", secure=False
+    endpoint="localhost:9000",
+    access_key="minioadmin",
+    secret_key="minioadmin",
+    secure=False,
 )
-bucket = "bronze"
+
+prefix = "espn/raw/stats/season=2025/week=1/"
+
+objects = client.list_objects(
+    bucket_name="bronze",
+    prefix=prefix,
+    recursive=True,
+)
+
+object_names = []
+for o in objects:
+    object_names.append(o.object_name)
+object_names = object_names[:1]
 
 
-def get_event_ids_by_week(year: int, week: int):
-    # "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?seasontype=2&week=1&year=2025" | jq ".events[].competitions[].id"
+# parse data
+for object_name in object_names:
+    fileobj = client.get_object("bronze", object_name)
+    data = None
+    with gzip.GzipFile(fileobj=fileobj) as gz:
+        raw_bytes = gz.read()
+        data = json.loads(raw_bytes.decode("utf-8"))
 
-    # "https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2024/types/2/weeks/1/events" \
+    for team in data["boxscore"]["players"]:
+        passing_stats = team["statistics"][0]
+        rushing_stats = team["statistics"][1]
+        receiving_stats = team["statistics"][2]
+        fumble_stats = team["statistics"][3]
 
-    # "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401772510"
-
-    ids = []
-    url = f"https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/{year}/types/2/weeks/{week}/events"
-    response = requests.get(url).json()
-    for item in response["items"]:
-        game_id = (
-            item["$ref"]
-            .strip(
-                "http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/"
-            )
-            .strip("?lang=en&region=us")
-        )
-        ids.append(game_id)
-    return ids
-
-
-# print(get_event_ids_by_week(2018, 1))
-
-
-def get_events_ids_by_week_raw(year: int, week: int):
-    # minio path
-    # espn/raw/events/season=2024/week=2/2026-04-11T18:05:12Z.json.gz
-    url = f"https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/{year}/types/2/weeks/{week}/events"
-    response = requests.get(url).json()
-    json_bytes = json.dumps(response).encode("utf-8")
-    buf = io.BytesIO()
-    with gzip.GzipFile(fileobj=buf, mode="wb") as gz:
-        gz.write(json_bytes)
-    buf.seek(0)
-    compressed_data = buf.read()
-    now = datetime.now()
-    object_name = f"espn/raw/events/season={year}/week={week}/{now}.json.gz"
-    client.put_object(
-        bucket_name=bucket,
-        object_name=object_name,
-        data=io.BytesIO(compressed_data),
-        length=len(compressed_data),
-        content_type="application/gzip",
-    )
+        # parse passing
+        for athlete in passing_stats["athletes"]:
+            player_id = athlete["athlete"]["id"]
+            player = athlete["athlete"]["displayName"]
+            stats = athlete["stats"]
+            print(player_id)
+            print(player)
+            print(stats)
+            
 
 
-# get_events_ids_by_week_raw(2018, 1)
-
-
-def get_stats_by_game_id(year: int, week: int, game_id: int):
-    # minio path
-    # espn/raw/summary/event=401772510/2026-04-11T18:05:12Z.json.gz
-    url = f"https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event={game_id}"
-    response = requests.get(url).json()
-    print(json.dumps(response))
-    # compress response into json.gz and load into minio at above path (after building the path)
-
-    json_bytes = json.dumps(response).encode("utf-8")
-    buf = io.BytesIO()
-    with gzip.GzipFile(fileobj=buf, mode="wb") as gz:
-        gz.write(json_bytes)
-    buf.seek(0)
-    compressed_data = buf.read()
-    now = datetime.now()
-    object_name = f"espn/raw/summary/season={year}/week={week}/game={game_id}/{now}.json.gz"
-    client.put_object(
-        bucket_name=bucket,
-        object_name=object_name,
-        data=io.BytesIO(compressed_data),
-        length=len(compressed_data),
-        content_type="application/gzip",
-    )
-
-
-get_stats_by_game_id(2024, 1, 401030721)
+{
+    "name": "passing",
+    "keys": [
+        "completions/passingAttempts",
+        "passingYards",
+        "yardsPerPassAttempt",
+        "passingTouchdowns",
+        "interceptions",
+        "sacks-sackYardsLost",
+        "adjQBR",
+        "QBRating",
+    ],
+    "text": "Philadelphia Passing",
+    "labels": ["C/ATT", "YDS", "AVG", "TD", "INT", "SACKS", "QBR", "RTG"],
+    "descriptions": [
+        "Completions/Attempts",
+        "Yards",
+        "Yards Per Pass Attempt",
+        "Touchdowns",
+        "Interceptions",
+        "Sacks",
+        "Adjusted QBR",
+        "Passer Rating",
+    ],
+    "athletes": [
+        {
+            "athlete": {
+                "id": "4040715",
+                "uid": "s:20~l:28~a:4040715",
+                "guid": "caceb80c-6350-a107-9fcf-7c7bd1b4edd8",
+                "firstName": "Jalen",
+                "lastName": "Hurts",
+                "displayName": "Jalen Hurts",
+                "links": [
+                    {
+                        "rel": ["playercard", "desktop", "athlete"],
+                        "href": "https://www.espn.com/nfl/player/_/id/4040715/jalen-hurts",
+                        "text": "Player Card",
+                    }
+                ],
+                "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nfl/players/full/4040715.png",
+                    "alt": "Jalen Hurts",
+                },
+                "jersey": "1",
+            },
+            "stats": ["19/23", "152", "6.6", "0", "0", "1-8", "89.0", "94.2"],
+        }
+    ],
+    "totals": ["19/23", "144", "6.6", "0", "0", "1-8", "--", "94.2"],
+}
