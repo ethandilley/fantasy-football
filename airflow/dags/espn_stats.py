@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from airflow.sdk import dag, task, Param, get_current_context
+from airflow.sdk import dag, task, Param
 from utils.minio import MinioClient
 from utils.espn import EspnClient
 
@@ -18,15 +18,12 @@ logger = logging.getLogger(__name__)
 )
 def espn_stats():
 
-    def get_params() -> tuple[int, int]:
-        ctx = get_current_context()
-        year = ctx["dag"].params["year"]
-        week = ctx["dag"].params["week"]
-        return year, week
 
     @task
-    def get_events():
-        year, week = get_params()
+    def get_events(**context):
+        year = context["params"]["year"]
+        week = context["params"]["week"]
+
         logger.info(year)
 
         espn_client = EspnClient()
@@ -39,8 +36,9 @@ def espn_stats():
         return ids
 
     @task
-    def get_stats(game_id: str):
-        year, week = get_params()
+    def get_stats(game_id: str, **context):
+        year = context["params"]["year"]
+        week = context["params"]["week"]
 
         espn_client = EspnClient()
         response = espn_client.get_stats(game_id)

@@ -1,9 +1,10 @@
 import logging
 from datetime import datetime
 
-from airflow.sdk import dag, task, Param, get_current_context
+from airflow.sdk import dag, task, Param
 from utils.minio import MinioClient
 from utils.espn import EspnClient
+from utils.clickhouse import ClickhouseClient
 
 logger = logging.getLogger(__name__)
 
@@ -18,39 +19,38 @@ logger = logging.getLogger(__name__)
 )
 def populate_player_game_stats():
 
-    def get_params() -> tuple[int, int]:
-        ctx = get_current_context()
-        year = ctx["dag"].params["year"]
-        week = ctx["dag"].params["week"]
-        return year, week
-
     @task
-    def get_events():
-        year, week = get_params()
-
-        espn_client = EspnClient()
-        response = espn_client.get_events(year, week)
-        ids = espn_client.get_event_ids(year, week)
+    def fetch_games(**context):
+        year = context["params"]["year"]
+        week = context["params"]["week"]
 
         minio_client = MinioClient()
-        object_name = minio_client.get_events_object_name(year, week)
-        minio_client.write_data("bronze", object_name, response)
-        return ids
+        objects = minio_client.fetch_game_objects("bronze", year, week)
+        game_paths = [o.object_name for o in objects]
+
+        return game_paths
+
+    @task(multiple_outputs=False)
+    def parse_games(game_path: str, **context) -> dict:
+        year = context["params"]["year"]
+        week = context["params"]["week"]
+        minio_client = MinioClient()
+        game_info = minio_client.read_data("bronze", game_path)
+
+        game_id = int(game_path.split("game=")[1].split("/")[0])
+        espn_client = EspnClient()
+        players = espn_client.build_players(game_id, year, week, game_info)
+
+        return players
 
     @task
-    def get_stats(game_id: str):
-        year, week = get_params()
+    def load(players_game: list[dict]):
+        clickhouse_client = ClickhouseClient()
+        clickhouse_client.write_player_game_stats(players_game)
 
-        espn_client = EspnClient()
-        response = espn_client.get_stats(game_id)
-
-        minio_client = MinioClient()
-        object_name = minio_client.get_stats_object_name(year, week, game_id)
-        minio_client.write_data("bronze", object_name, response)
-
-    ids = get_events()
-    get_stats.expand(game_id=ids)
+    game_paths = fetch_games()
+    players_games = parse_games.expand(game_path=game_paths)
+    load.expand(players_game=players_games)
 
 
 populate_player_game_stats()
-

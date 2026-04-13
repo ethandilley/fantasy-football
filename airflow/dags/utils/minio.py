@@ -37,6 +37,20 @@ class MinioClient:
             content_type="application/gzip",
         )
 
+    def read_data(self, bucket, object_name: str):
+        fileobj = self.client.get_object(bucket, object_name)
+        with gzip.GzipFile(fileobj=fileobj) as gz:
+            raw_bytes = gz.read()
+            return json.loads(raw_bytes.decode("utf-8"))
+
+    def fetch_game_objects(self, bucket: str, year: int, week: int):
+        prefix = f"espn/raw/stats/season={year}/week={week}/"
+        return self.client.list_objects(
+            bucket_name=bucket,
+            prefix=prefix,
+            recursive=True,
+        )
+
     def get_events_object_name(self, year: int, week: int):
         return f"espn/raw/events/season={year}/week={week}/data.json.gz"
 

@@ -1,40 +1,41 @@
-from minio import Minio
-from dataclasses import dataclass
-import json
 import gzip
+import json
+from dataclasses import asdict, dataclass
+
+import clickhouse_connect
+from minio import Minio
 
 
 @dataclass
 class PlayerGameStats:
     # identity
     player_id: int
-    game_id: int | None
-    season: int | None
-    week: int | None
-    team_id: int | None
-    opponent_team_id: int | None
+    name: str | None = None
+    game_id: int | None = None
+    season: int | None = None
+    week: int | None = None
 
     # passing
-    passing_attempts: int | None
-    passing_completions: int | None
-    passing_yards: int | None
-    passing_tds: int | None
-    interceptions: int | None
+    passing_attempts: int = 0
+    passing_completions: int = 0
+    passing_yards: int = 0
+    passing_tds: int = 0
+    interceptions: int = 0
 
     # rushing
-    rushing_attempts: int | None
-    rushing_yards: int | None
-    rushing_tds: int | None
+    rushing_attempts: int = 0
+    rushing_yards: int = 0
+    rushing_tds: int = 0
 
     # receiving
-    targets: int | None
-    receptions: int | None
-    receiving_yards: int | None
-    receiving_tds: int | None
+    targets: int = 0
+    receptions: int = 0
+    receiving_yards: int = 0
+    receiving_tds: int = 0
 
     # fumbles
-    fumbles: int | None
-    fumbles_lost: int | None
+    fumbles: int = 0
+    fumbles_lost: int = 0
 
 
 year = 2025
@@ -64,11 +65,14 @@ object_names = object_names[:1]
 
 # parse data
 for object_name in object_names:
+    game_id = int(object_name.split("game=")[1].split("/")[0])
     fileobj = client.get_object("bronze", object_name)
     data = None
     with gzip.GzipFile(fileobj=fileobj) as gz:
         raw_bytes = gz.read()
         data = json.loads(raw_bytes.decode("utf-8"))
+
+    players = {}
 
     for team in data["boxscore"]["players"]:
         passing_stats = team["statistics"][0]
@@ -78,63 +82,134 @@ for object_name in object_names:
 
         # parse passing
         for athlete in passing_stats["athletes"]:
-            player_id = athlete["athlete"]["id"]
+            player_id = int(athlete["athlete"]["id"])
             player = athlete["athlete"]["displayName"]
             stats = athlete["stats"]
-            print(player_id)
-            print(player)
-            print(stats)
-            
+            completions, attempts = stats[0].split("/")
+            yards = stats[1]
+            touchdowns = stats[3]
+            interceptions = stats[4]
 
+            statline = players.get(
+                player_id,
+                PlayerGameStats(
+                    player_id=player_id,
+                    name=player,
+                    game_id=game_id,
+                    season=year,
+                    week=week,
+                ),
+            )
+            statline.passing_attempts = int(attempts)
+            statline.passing_completions = int(completions)
+            statline.passing_yards = int(yards)
+            statline.passing_tds = int(touchdowns)
+            statline.interceptions = int(interceptions)
+            players[player_id] = statline
 
-{
-    "name": "passing",
-    "keys": [
-        "completions/passingAttempts",
-        "passingYards",
-        "yardsPerPassAttempt",
-        "passingTouchdowns",
+        # parse rushing
+        for athlete in rushing_stats["athletes"]:
+            player_id = int(athlete["athlete"]["id"])
+            player = athlete["athlete"]["displayName"]
+            stats = athlete["stats"]
+            attempts = stats[0]
+            yards = stats[1]
+            tds = stats[3]
+
+            statline = players.get(
+                player_id,
+                PlayerGameStats(
+                    player_id=player_id,
+                    name=player,
+                    game_id=game_id,
+                    season=year,
+                    week=week,
+                ),
+            )
+            statline.rushing_attempts = int(attempts)
+            statline.rushing_yards = int(yards)
+            statline.rushing_tds = int(tds)
+            players[player_id] = statline
+
+        for athlete in receiving_stats["athletes"]:
+            player_id = int(athlete["athlete"]["id"])
+            player = athlete["athlete"]["displayName"]
+            stats = athlete["stats"]
+            targets = stats[5]
+            receptions = stats[0]
+            yards = stats[1]
+            touchdowns = stats[3]
+
+            statline = players.get(
+                player_id,
+                PlayerGameStats(
+                    player_id=player_id,
+                    name=player,
+                    game_id=game_id,
+                    season=year,
+                    week=week,
+                ),
+            )
+            statline.targets = int(targets)
+            statline.receptions = int(receptions)
+            statline.receiving_yards = int(yards)
+            statline.receiving_tds = int(touchdowns)
+            players[player_id] = statline
+
+        for athlete in fumble_stats["athletes"]:
+            player_id = int(athlete["athlete"]["id"])
+            player = athlete["athlete"]["displayName"]
+            stats = athlete["stats"]
+            fumbles = stats[0]
+            lost = stats[1]
+
+            statline = players.get(
+                player_id,
+                PlayerGameStats(
+                    player_id=player_id,
+                    name=player,
+                    game_id=game_id,
+                    season=year,
+                    week=week,
+                ),
+            )
+            statline.fumbles = int(fumbles)
+            statline.fumbles_lost = int(lost)
+            players[player_id] = statline
+
+    # write data
+    data = [asdict(p) for p in players.values()]
+    print(data)
+    clickhouse = clickhouse_connect.get_client(
+        host="localhost", port=8123, username="default", password="default"
+    )
+    columns=[
+        "player_id",
+        "name",
+        "game_id",
+        "season",
+        "week",
+        "passing_attempts",
+        "passing_completions",
+        "passing_yards",
+        "passing_tds",
         "interceptions",
-        "sacks-sackYardsLost",
-        "adjQBR",
-        "QBRating",
-    ],
-    "text": "Philadelphia Passing",
-    "labels": ["C/ATT", "YDS", "AVG", "TD", "INT", "SACKS", "QBR", "RTG"],
-    "descriptions": [
-        "Completions/Attempts",
-        "Yards",
-        "Yards Per Pass Attempt",
-        "Touchdowns",
-        "Interceptions",
-        "Sacks",
-        "Adjusted QBR",
-        "Passer Rating",
-    ],
-    "athletes": [
-        {
-            "athlete": {
-                "id": "4040715",
-                "uid": "s:20~l:28~a:4040715",
-                "guid": "caceb80c-6350-a107-9fcf-7c7bd1b4edd8",
-                "firstName": "Jalen",
-                "lastName": "Hurts",
-                "displayName": "Jalen Hurts",
-                "links": [
-                    {
-                        "rel": ["playercard", "desktop", "athlete"],
-                        "href": "https://www.espn.com/nfl/player/_/id/4040715/jalen-hurts",
-                        "text": "Player Card",
-                    }
-                ],
-                "headshot": {
-                    "href": "https://a.espncdn.com/i/headshots/nfl/players/full/4040715.png",
-                    "alt": "Jalen Hurts",
-                },
-                "jersey": "1",
-            },
-            "stats": ["19/23", "152", "6.6", "0", "0", "1-8", "89.0", "94.2"],
-        }
-    ],
-    "totals": ["19/23", "144", "6.6", "0", "0", "1-8", "--", "94.2"],
-}
+        "rushing_attempts",
+        "rushing_yards",
+        "rushing_tds",
+        "targets",
+        "receptions",
+        "receiving_yards",
+        "receiving_tds",
+        "fumbles",
+        "fumbles_lost",
+    ]
+    data = [
+        [getattr(p, col) for col in columns]
+        for p in players.values()
+    ]
+    clickhouse.insert(
+        "silver.playergamestats",
+        data,
+        column_names=columns,
+    )
