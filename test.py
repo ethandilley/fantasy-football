@@ -204,10 +204,6 @@ for object_name in object_names:
         "fumbles",
         "fumbles_lost",
     ]
-    data = [
-        [getattr(p, col) for col in columns]
-        for p in players.values()
-    ]
     clickhouse.insert(
         "silver.playergamestats",
         data,

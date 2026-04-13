@@ -33,4 +33,6 @@ CREATE TABLE silver.playergamestats
     receiving_tds int not null,
     fumbles int not null,
     fumbles_lost int not null
-);
+)
+ENGINE = ReplacingMergeTree()
+ORDER BY (player_id, game_id);
