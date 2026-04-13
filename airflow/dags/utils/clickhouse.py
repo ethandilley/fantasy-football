@@ -12,6 +12,43 @@ class ClickhouseClient:
         self.client = clickhouse_connect.get_client(
             host=host, port=port, username=username, password=password
         )
+    def write_team_game_stats(self, data):
+        print(data)
+        columns = [
+            "team_id",
+            "name",
+            "game_id",
+            "season",
+            "week",
+            "home_away",
+            "first_downs",
+            "third_down_conversions",
+            "third_down_attempts",
+            "fourth_down_conversions",
+            "fourth_down_attempts",
+            "total_plays",
+            "total_yards",
+            "yards_per_play",
+            "total_drives",
+            "net_passing_yards",
+            "passing_completions",
+            "passing_attempts",
+            "yards_per_pass",
+            "interceptions_thrown",
+            "sacks",
+            "sack_yards_lost",
+            "rushing_yards",
+            "rushing_attempts",
+            "yards_per_rush",
+            "red_zone_conversions",
+            "red_zone_attempts",
+            "turnovers",
+            "fumbles_lost",
+            "possession_time_seconds",
+        ]
+        rows = [[t[col] for col in columns] for t in data]
+        print(rows)
+        self.client.insert("silver.teamgamestats", rows, column_names=columns)
 
     def write_player_game_stats(self, data):
         columns = [

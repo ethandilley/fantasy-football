@@ -74,7 +74,7 @@ for object_name in object_names:
 
     players = {}
 
-    for team in data["boxscore"]["players"]:
+    for team in data["boxscore"]["teams"]:
         passing_stats = team["statistics"][0]
         rushing_stats = team["statistics"][1]
         receiving_stats = team["statistics"][2]

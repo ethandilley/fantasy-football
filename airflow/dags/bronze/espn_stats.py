@@ -12,12 +12,11 @@ logger = logging.getLogger(__name__)
     schedule="@daily",
     start_date=datetime(2023, 1, 1),
     params={
-        "year": Param(2025, type="integer", minimum=2018, maximum=2025),
+        "year": Param(2025, type="integer", minimum=1999, maximum=2025),
         "week": Param(1, type="integer", minimum=1, maximum=17),
     },
 )
 def espn_stats():
-
 
     @task
     def get_events(**context):
@@ -32,6 +31,7 @@ def espn_stats():
 
         minio_client = MinioClient()
         object_name = minio_client.get_events_object_name(year, week)
+        print(response)
         minio_client.write_data("bronze", object_name, response)
         return ids
 
@@ -45,6 +45,7 @@ def espn_stats():
 
         minio_client = MinioClient()
         object_name = minio_client.get_stats_object_name(year, week, game_id)
+        print(response)
         minio_client.write_data("bronze", object_name, response)
 
     ids = get_events()

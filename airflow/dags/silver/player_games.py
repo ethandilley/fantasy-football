@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
     schedule="@daily",
     start_date=datetime(2023, 1, 1),
     params={
-        "year": Param(2025, type="integer", minimum=2018, maximum=2025),
+        "year": Param(2025, type="integer", minimum=1999, maximum=2025),
         "week": Param(1, type="integer", minimum=1, maximum=17),
     },
 )
@@ -54,3 +54,4 @@ def populate_player_game_stats():
 
 
 populate_player_game_stats()
+

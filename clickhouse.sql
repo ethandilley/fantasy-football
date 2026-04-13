@@ -36,3 +36,39 @@ CREATE TABLE silver.playergamestats
 )
 ENGINE = ReplacingMergeTree()
 ORDER BY (player_id, game_id);
+
+CREATE TABLE silver.teamgamestats
+(
+    team_id         Int  NOT NULL,
+    name String NOT NULL,
+    game_id         Int  NOT NULL,
+    season          Int  NOT NULL,
+    week            Int  NOT NULL,
+    home_away       String NOT NULL,
+    first_downs                Int NOT NULL,
+    third_down_conversions     Int NOT NULL,
+    third_down_attempts        Int NOT NULL,
+    fourth_down_conversions    Int NOT NULL,
+    fourth_down_attempts       Int NOT NULL,
+    total_plays                Int NOT NULL,
+    total_yards                Int NOT NULL,
+    yards_per_play             Float NOT NULL,
+    total_drives               Int NOT NULL,
+    net_passing_yards          Int NOT NULL,
+    passing_completions        Int NOT NULL,
+    passing_attempts           Int NOT NULL,
+    yards_per_pass             Float NOT NULL,
+    interceptions_thrown       Int NOT NULL,
+    sacks                      Int NOT NULL,
+    sack_yards_lost            Int NOT NULL,
+    rushing_yards              Int NOT NULL,
+    rushing_attempts           Int NOT NULL,
+    yards_per_rush             Float NOT NULL,
+    red_zone_conversions       Int NOT NULL,
+    red_zone_attempts          Int NOT NULL,
+    turnovers                  Int NOT NULL,
+    fumbles_lost               Int NOT NULL,
+    possession_time_seconds    Int NOT NULL
+)
+ENGINE = ReplacingMergeTree()
+ORDER BY (team_id, game_id);
