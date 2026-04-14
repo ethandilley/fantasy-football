@@ -1,6 +1,7 @@
--- create players table
-CREATE TABLE mappings.players
+-- players table
+CREATE TABLE silver.players
 (
+    id UUID DEFAULT generateUUIDv4(),
     name String NOT NULL,
     espn_id Int NOT NULL,
     position String NOT NULL,
@@ -9,7 +10,41 @@ CREATE TABLE mappings.players
     draft_year Int NOT NULL,
     draft_round Int NOT NULL,
     draft_selection Int NOT NULL
-);
+)
+ENGINE = ReplacingMergeTree()
+ORDER BY (espn_id);
+
+-- teams table
+CREATE TABLE silver.teams
+(
+    id UUID DEFAULT generateUUIDv4(),
+    name String NOT NULL,
+    espn_id Int NOT NULL
+)
+ENGINE = ReplacingMergeTree()
+ORDER BY (espn_id);
+
+-- games table
+CREATE TABLE silver.games
+(
+    id UUID,
+    espn_id Int NOT NULL,
+    slug String NOT NULL,
+    season Int NOT NULL,
+    week Int NOT NULL,
+    home_team_id Int NOT NULL,
+    away_team_id Int NOT NULL
+    home_score Int NOT NULL,
+    away_score Int NOT NULL,
+    game_date Date NOT NULL,
+    stadium String,
+    weather_condition String,   -- dome, outdoor, rain, snow
+    temperature Int,
+    wind_speed Int
+)
+ENGINE = ReplacingMergeTree()
+ORDER BY (espn_id);
+
 
 -- create playergamestats table (huge table)
 CREATE TABLE silver.playergamestats
@@ -72,3 +107,5 @@ CREATE TABLE silver.teamgamestats
 )
 ENGINE = ReplacingMergeTree()
 ORDER BY (team_id, game_id);
+
+

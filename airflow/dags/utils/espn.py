@@ -54,6 +54,15 @@ class EspnClient:
 
         return ids
 
+    def get_players(self, page: int = 1, limit: int = 1):
+        athlete_path = "leagues/nfl/athletes"
+        url = f"{self.CORE_URL}/{self.FOOTBALL_PATH}/{athlete_path}"
+        return self._get(url, params={"limit": limit, "page": page})
+
+    def get_player_count(self):
+        data = self.get_players()
+        return data["count"]
+
     def get_stats(self, event_id: str):
         summary_path = "nfl/summary"
         url = f"{self.BASE_URL}/{self.FOOTBALL_PATH}/{summary_path}"
@@ -240,3 +249,13 @@ class EspnClient:
             )
             teams.append(statline)
         return [asdict(p) for p in teams]
+
+batch_size = 75
+e = EspnClient()
+player_count = e.get_player_count()
+pages = player_count // batch_size
+parameters = [(i, batch_size) for i in range(pages + 1)]
+print(parameters)
+
+params = {}
+

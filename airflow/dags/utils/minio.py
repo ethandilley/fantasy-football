@@ -1,3 +1,4 @@
+from datetime import date
 import gzip
 import io
 import json
@@ -43,6 +44,14 @@ class MinioClient:
             raw_bytes = gz.read()
             return json.loads(raw_bytes.decode("utf-8"))
 
+    def fetch_player_objects(self, bucket: str, today: str):
+        prefix = f"espn/raw/players/date={today}"
+        return self.client.list_objects(
+            bucket_name=bucket,
+            prefix=prefix,
+            recursive=True,
+        )
+
     def fetch_game_objects(self, bucket: str, year: int, week: int):
         prefix = f"espn/raw/stats/season={year}/week={week}/"
         return self.client.list_objects(
@@ -56,3 +65,14 @@ class MinioClient:
 
     def get_stats_object_name(self, year: int, week: int, game_id: str):
         return f"espn/raw/stats/season={year}/week={week}/game={game_id}/data.json.gz"
+
+    def get_players_object_name(self, page: int) -> str:
+        today = str(date.today())
+        return f"espn/raw/players/date={today}/page={page}/data.json.gz"
+
+m = MinioClient("localhost:9000")
+today = str(date.today())
+response = m.fetch_player_objects("bronze", today)
+print(response)
+for a in response:
+    print(a)
