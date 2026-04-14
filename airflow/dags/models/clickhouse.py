@@ -82,3 +82,16 @@ class TeamGameStats:
 
     # possession
     possession_time_seconds: int = 0
+
+@dataclass
+class Player:
+    name: str
+    espn_id: int
+    position: str
+    height: int
+    weight: int
+    age: int
+    date_of_birth: str
+    draft_year: int
+    draft_round: int
+    draft_selection: int

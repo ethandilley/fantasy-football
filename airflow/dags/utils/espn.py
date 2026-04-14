@@ -68,6 +68,31 @@ class EspnClient:
         url = f"{self.BASE_URL}/{self.FOOTBALL_PATH}/{summary_path}"
         return self._get(url, params={"event": event_id})
 
+    def get_player_by_ref(self, ref: str) -> dict | None:
+        data = self._get(ref)
+
+        if not data.get("active"):
+            return None
+
+        draft = data.get("draft") or {}
+        status = data.get("status") or {}
+
+        return {
+            "display_name": data.get("displayName"),
+            "id": str(data.get("id", "")),
+            "position": data.get("position", {}).get("name"),
+            "height": data.get("height"),
+            "weight": data.get("weight"),
+            "age": data.get("age"),
+            "date_of_birth": data.get("dateOfBirth"),
+            "draft": {
+                "year": draft.get("year"),
+                "round": draft.get("round"),
+                "selection": draft.get("selection"),
+            },
+            "status": status.get("name"),
+        }
+
     def build_players(self, game_id: int, year: int, week: int, game_info: dict):
         players = {}
         for team in game_info["boxscore"]["players"]:
@@ -250,6 +275,7 @@ class EspnClient:
             teams.append(statline)
         return [asdict(p) for p in teams]
 
+
 batch_size = 75
 e = EspnClient()
 player_count = e.get_player_count()
@@ -258,4 +284,3 @@ parameters = [(i, batch_size) for i in range(pages + 1)]
 print(parameters)
 
 params = {}
-

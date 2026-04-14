@@ -30,38 +30,49 @@ def players():
         return parameters
 
     @task
-    def extract(values: tuple[int, int]):
+    def extract_refs(values: tuple[int, int]):
         page, batch_size = values
         espn_client = EspnClient()
-        data = espn_client.get_players(page=page, limit=batch_size)
-        return {"page": page, "data": data}
+        refs = espn_client.get_players(page=page, limit=batch_size)
+        return {"page": page, "refs": refs}
 
     @task
-    def load(result: dict):
-        page, data = result["page"], result["data"]
+    def load_refs(result: dict):
         print(result)
+        page, refs = result["page"], result["refs"]
         minio_client = MinioClient()
-        object_name = minio_client.get_players_object_name(page)
-        minio_client.write_data("bronze", object_name, data)
+        object_name = f"espn/raw/players/date={date.today()}/refs/page={page}/data.json.gz"
+        response = minio_client.write_data("bronze", object_name, refs)
+        print(response)
 
-    @task
-    def cleanup():
-        print("cleaning")
-        # today = str(date.today())
-        # prefix_dates = set()
-        # minio_client = MinioClient()
-        # prefix_objects = minio_client.fetch_player_objects("bronze")
-        # prefix_format = "espn/raw/players/date={prefix_date}"
-        # for prefix_object in prefix_objects:
-        #     prefix_date = prefix_object.object_name.split("date=")[1].split("/")[0]
-        #     if prefix_date != today:
-        #
-        #         prefix_dates.add(prefix_date)
-        # minio_client.delete_data("bronze", 
-        # # get deletion objects
-        # print("cleaned")
+        refs_list = []
+        for item in result["refs"]["items"]:
+            refs_list.append(item["$ref"])
+        print(refs_list)
+        return refs_list
 
-    load.expand(result=extract.expand(values=delimit_pages())) >> cleanup()
+    @task 
+    def extract_players(data: dict):
+
+
+    # @task
+    # def enrich(result: dict):
+    #     pass
+    #
+    #
+    # @task
+    # def load(result: dict):
+    #     page, data = result["page"], result["data"]
+    #     print(result)
+    #     minio_client = MinioClient()
+    #     object_name = minio_client.get_players_object_name(page)
+    #     minio_client.write_data("bronze", object_name, data)
+    #
+    # @task
+    # def cleanup():
+    #     print("cleaning")
+
+    load_refs.expand(result=extract_refs.expand(values=delimit_pages()))
 
 
 players()

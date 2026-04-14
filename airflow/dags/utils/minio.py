@@ -30,7 +30,7 @@ class MinioClient:
         buf.seek(0)
         compressed_data = buf.read()
 
-        self.client.put_object(
+        return self.client.put_object(
             bucket_name=bucket,
             object_name=object_name,
             data=io.BytesIO(compressed_data),
@@ -69,10 +69,3 @@ class MinioClient:
     def get_players_object_name(self, page: int) -> str:
         today = str(date.today())
         return f"espn/raw/players/date={today}/page={page}/data.json.gz"
-
-m = MinioClient("localhost:9000")
-today = str(date.today())
-response = m.fetch_player_objects("bronze", today)
-print(response)
-for a in response:
-    print(a)
