@@ -4,9 +4,9 @@ from datetime import datetime, timezone
 import os
 
 airflow_token = os.environ.get("AIRFLOW_TOKEN")
-dag = "populate_team_game_stats"
+# dag = "populate_team_game_stats"
 # dag = "espn_stats"
-# dag = "populate_player_game_stats"
+dag = "populate_player_game_stats"
 
 BASE_URL = "http://localhost:8080/api/v2"
 headers = {
@@ -28,8 +28,10 @@ def get_in_flight():
     ])
 
 
-for year in range(2009, 2026):
-    for week in range(1, 18):
+for year in range(1999, 2026):
+    for week in range(1, 19):
+        # year = 2014
+        # week = 4
 
         while get_in_flight() >= MAX_IN_FLIGHT:
             print("At capacity (running + queued). Waiting...")

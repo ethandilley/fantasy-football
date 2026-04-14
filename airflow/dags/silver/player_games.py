@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
     start_date=datetime(2023, 1, 1),
     params={
         "year": Param(2025, type="integer", minimum=1999, maximum=2025),
-        "week": Param(1, type="integer", minimum=1, maximum=17),
+        "week": Param(1, type="integer", minimum=1, maximum=18),
     },
 )
 def populate_player_game_stats():
