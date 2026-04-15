@@ -1,11 +1,9 @@
-# get number of total players
-# get split it up by page/limit
-import logging
 from datetime import datetime, date
+import logging
 
-from airflow.sdk import dag, task, Param
+from airflow.sdk import dag, task
 from utils.minio import MinioClient
-from utils.espn import EspnClient
+from utils.clickhouse import ClickhouseClient
 
 logger = logging.getLogger(__name__)
 
@@ -13,40 +11,55 @@ logger = logging.getLogger(__name__)
 @dag(
     schedule="@daily",
     start_date=datetime(2023, 1, 1),
+    max_active_tasks=5,
 )
-def players():
+def players_silver():
 
     @task
-    def fetch_pages():
+    def fetch_players():
         minio_client = MinioClient()
-        object_names = []
         today = str(date.today())
-        player_objects = minio_client.fetch_player_objects("bronze", today)
-        for player_object in player_objects:
-            object_names.append(player_object.object_name)
-
+        objects = minio_client.fetch_player_objects("bronze", today)
+        object_names = [o.object_name for o in objects]
         return object_names
 
     @task
-    def extract(object_name: str):
+    def extract(object_path: str):
         minio_client = MinioClient()
-        player_data = minio_client.read_data("bronze", object_name)
-        print(player_data)
-        return player_data
+        players = minio_client.read_data("bronze", object_path)
+        return {"players": players}
 
     @task
-    def transform(player_data: dict):
-        page, data = result["page"], result["data"]
-        print(result)
-        minio_client = MinioClient()
-        object_name = minio_client.get_players_object_name(page)
-        minio_client.write_data("bronze", object_name, data)
+    def transform(results: dict):
+        players = results["players"]
+        extracted_players = {}
+        for player in players:
+            name = player.get("displayName")
+            draft = player.get("draft") or {}
+            status = player.get("status") or {}
+            extracted_player = {
+                "name": name,
+                "espn_id": str(player.get("id", "")),
+                "position": player.get("position", {}).get("name"),
+                "height": player.get("height"),
+                "weight": player.get("weight"),
+                "age": player.get("age"),
+                "draft_year": draft.get("year"),
+                "draft_round": draft.get("round"),
+                "draft_selection": draft.get("selection"),
+                "status": status.get("name"),
+            }
+            extracted_players[name] = extracted_player
+        return [p for p in extracted_players.values()]
 
     @task
-    def load(data: dict):
-        pass
+    def load(players: list[dict]):
+        clickhouse_client = ClickhouseClient()
+        clickhouse_client.write_players(players)
 
-    load.expand(result=extract.expand(page=fetch_pages()))
+    load.expand(
+        players=transform.expand(results=extract.expand(object_path=fetch_players()))
+    )
 
 
-players()
+players_silver()

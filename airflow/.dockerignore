@@ -1,0 +1,28 @@
+# Airflow logs (CRITICAL)
+logs/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# DAG processor artifacts
+dag_processor/
+
+# Virtual envs
+.venv/
+venv/
+
+# Git
+.git/
+.gitignore
+
+# Python tooling caches
+.pytest_cache/
+.ruff_cache/
+
+# Local env files
+.env
+.env.*
+
+# Misc
+*.swp

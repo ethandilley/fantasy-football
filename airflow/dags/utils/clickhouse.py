@@ -12,6 +12,7 @@ class ClickhouseClient:
         self.client = clickhouse_connect.get_client(
             host=host, port=port, username=username, password=password
         )
+
     def write_team_game_stats(self, data):
         print(data)
         columns = [
@@ -78,6 +79,44 @@ class ClickhouseClient:
 
         self.client.insert(
             "silver.playergamestats",
+            rows,
+            column_names=columns,
+        )
+
+    def write_players(self, data):
+        columns = [
+            "name",
+            "espn_id",
+            "position",
+            "height",
+            "weight",
+            "age",
+            "draft_year",
+            "draft_round",
+            "draft_selection",
+            "status",
+        ]
+        print(data)
+        rows = [[p[col] for col in columns] for p in data]
+        print(rows)
+
+        self.client.insert(
+            "silver.players",
+            rows,
+            column_names=columns,
+        )
+
+    def write_teams(self, data):
+        columns = [
+            "name",
+            "espn_id",
+        ]
+        print(data)
+        rows = [[p[col] for col in columns] for p in data]
+        print(rows)
+
+        self.client.insert(
+            "silver.teams",
             rows,
             column_names=columns,
         )

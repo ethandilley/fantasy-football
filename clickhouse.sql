@@ -1,21 +1,23 @@
 -- players table
-CREATE TABLE silver.players
+CREATE OR REPLACE TABLE silver.players
 (
     id UUID DEFAULT generateUUIDv4(),
     name String NOT NULL,
     espn_id Int NOT NULL,
-    position String NOT NULL,
-    height Int NOT NULL,
-    weight Int NOT NULL,
-    draft_year Int NOT NULL,
-    draft_round Int NOT NULL,
-    draft_selection Int NOT NULL
+    position String,
+    height Nullable(Int32),
+    weight Nullable(Int32),
+    age Nullable(Int32),
+    draft_year Nullable(Int32),
+    draft_round Nullable(Int32),
+    draft_selection Nullable(Int32),
+    status String NOT NULL
 )
 ENGINE = ReplacingMergeTree()
 ORDER BY (espn_id);
 
 -- teams table
-CREATE TABLE silver.teams
+CREATE or replace TABLE silver.teams
 (
     id UUID DEFAULT generateUUIDv4(),
     name String NOT NULL,

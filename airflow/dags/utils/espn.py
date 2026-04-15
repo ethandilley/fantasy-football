@@ -9,7 +9,7 @@ class EspnClient:
 
     FOOTBALL_PATH = "sports/football"
 
-    def __init__(self, timeout=10):
+    def __init__(self, timeout=30):
         self.timeout = timeout
         self.session = requests.Session()
 
@@ -54,6 +54,11 @@ class EspnClient:
 
         return ids
 
+    def get_teams(self):
+        athlete_path = "leagues/nfl/teams"
+        url = f"{self.CORE_URL}/{self.FOOTBALL_PATH}/{athlete_path}"
+        return self._get(url, params={"limit": 50})
+
     def get_players(self, page: int = 1, limit: int = 1):
         athlete_path = "leagues/nfl/athletes"
         url = f"{self.CORE_URL}/{self.FOOTBALL_PATH}/{athlete_path}"
@@ -69,29 +74,7 @@ class EspnClient:
         return self._get(url, params={"event": event_id})
 
     def get_player_by_ref(self, ref: str) -> dict | None:
-        data = self._get(ref)
-
-        if not data.get("active"):
-            return None
-
-        draft = data.get("draft") or {}
-        status = data.get("status") or {}
-
-        return {
-            "display_name": data.get("displayName"),
-            "id": str(data.get("id", "")),
-            "position": data.get("position", {}).get("name"),
-            "height": data.get("height"),
-            "weight": data.get("weight"),
-            "age": data.get("age"),
-            "date_of_birth": data.get("dateOfBirth"),
-            "draft": {
-                "year": draft.get("year"),
-                "round": draft.get("round"),
-                "selection": draft.get("selection"),
-            },
-            "status": status.get("name"),
-        }
+        return self._get(ref)
 
     def build_players(self, game_id: int, year: int, week: int, game_info: dict):
         players = {}
@@ -274,13 +257,3 @@ class EspnClient:
             )
             teams.append(statline)
         return [asdict(p) for p in teams]
-
-
-batch_size = 75
-e = EspnClient()
-player_count = e.get_player_count()
-pages = player_count // batch_size
-parameters = [(i, batch_size) for i in range(pages + 1)]
-print(parameters)
-
-params = {}
