@@ -120,3 +120,28 @@ class ClickhouseClient:
             rows,
             column_names=columns,
         )
+
+    def write_games(self, data):
+        columns = [
+            "espn_id",
+            "slug",
+            "season",
+            "week",
+            "home_team_id",
+            "away_team_id",
+            "home_score",
+            "away_score",
+            "game_date",
+            "weather_condition",
+            "temperature",
+            "wind_speed",
+        ]
+        print(data)
+        rows = [[data[col] for col in columns]]
+        print(rows)
+
+        self.client.insert(
+            "silver.games",
+            rows,
+            column_names=columns,
+        )

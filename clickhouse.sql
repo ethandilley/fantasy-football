@@ -27,20 +27,19 @@ ENGINE = ReplacingMergeTree()
 ORDER BY (espn_id);
 
 -- games table
-CREATE TABLE silver.games
+CREATE or replace TABLE silver.games
 (
-    id UUID,
+    id UUID DEFAULT generateUUIDv4(),
     espn_id Int NOT NULL,
     slug String NOT NULL,
     season Int NOT NULL,
     week Int NOT NULL,
     home_team_id Int NOT NULL,
-    away_team_id Int NOT NULL
+    away_team_id Int NOT NULL,
     home_score Int NOT NULL,
     away_score Int NOT NULL,
-    game_date Date NOT NULL,
-    stadium String,
-    weather_condition String,   -- dome, outdoor, rain, snow
+    game_date String NOT NULL,
+    weather_condition String,
     temperature Int,
     wind_speed Int
 )

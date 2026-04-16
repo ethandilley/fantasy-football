@@ -6,7 +6,8 @@ import os
 airflow_token = os.environ.get("AIRFLOW_TOKEN")
 # dag = "populate_team_game_stats"
 # dag = "espn_stats"
-dag = "populate_player_game_stats"
+# dag = "populate_player_game_stats"
+dag = "games_silver"
 
 BASE_URL = "http://localhost:8080/api/v2"
 headers = {
