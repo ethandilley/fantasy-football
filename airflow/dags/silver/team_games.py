@@ -3,7 +3,7 @@ from datetime import datetime
 
 from airflow.sdk import dag, task, Param
 from utils.minio import MinioClient
-from utils.espn import EspnClient
+from utils.translation import EspnTranslator
 from utils.clickhouse import ClickhouseClient
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ def populate_team_game_stats():
         return game_paths
 
     @task(multiple_outputs=False)
-    def parse_games(game_path: str, **context) -> dict:
+    def parse_games(game_path: str, **context):
         year = context["params"]["year"]
         week = context["params"]["week"]
         print(year)
@@ -46,8 +46,8 @@ def populate_team_game_stats():
         print(game_info)
 
         game_id = int(game_path.split("game=")[1].split("/")[0])
-        espn_client = EspnClient()
-        teams = espn_client.build_teams(game_id, year, week, game_info)
+        translator = EspnTranslator()
+        teams = translator.to_team_stats(game_id, year, week, game_info)
         print(teams)
 
         return teams
