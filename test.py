@@ -51,6 +51,27 @@ def build_playergame_features(df: pd.DataFrame) -> pd.DataFrame:
     df["games_played_this_season"] = df.groupby(["player_id", "season"]).cumcount()
 
     # ─────────────────────────────────────────────
+    # Step 2B: Lag features (NO leakage)
+    # ─────────────────────────────────────────────
+
+    lag_cols = [
+        "fantasy_points_ppr",
+        "passing_yards",
+        "rushing_yards",
+        "receiving_yards",
+        "targets",
+        "rushing_attempts",
+    ]
+
+    lags = [1, 2, 3]
+
+    g = df.groupby("player_id")
+
+    for col in lag_cols:
+        for lag in lags:
+            df[f"{col}_lag{lag}"] = g[col].shift(lag)
+
+    # ─────────────────────────────────────────────
     # Step 3: Team-game aggregation (CRITICAL FIX)
     # ─────────────────────────────────────────────
     team_game = (
@@ -100,8 +121,20 @@ def build_playergame_features(df: pd.DataFrame) -> pd.DataFrame:
     # ─────────────────────────────────────────────
     # Step 5: Final schema (matches your DDL)
     # ─────────────────────────────────────────────
+    lag_feature_cols = [
+        "fantasy_points_ppr_lag1",
+        "fantasy_points_ppr_lag2",
+        "fantasy_points_ppr_lag3",
+        "passing_yards_lag1",
+        "rushing_yards_lag1",
+        "receiving_yards_lag1",
+        "targets_lag1",
+        "rushing_attempts_lag1",
+    ]
+
     features = df[
         [
+            # existing columns...
             "player_id",
             "game_id",
             "season",
@@ -113,15 +146,19 @@ def build_playergame_features(df: pd.DataFrame) -> pd.DataFrame:
             "weather_condition",
             "temperature",
             "wind_speed",
+            # rolling
             "avg_fantasy_points_last3",
             "avg_fantasy_points_last5",
             "avg_passing_yards_last3",
             "avg_rushing_yards_last3",
             "avg_receiving_yards_last3",
             "avg_targets_last3",
+            # opponent
             "opp_avg_passing_yards_allowed_last3",
             "opp_avg_rushing_yards_allowed_last3",
             "opp_avg_receiving_yards_allowed_last3",
+            # lag features 👇
+            *lag_feature_cols,
             "games_played_this_season",
             "fantasy_points_ppr",
         ]
@@ -129,6 +166,7 @@ def build_playergame_features(df: pd.DataFrame) -> pd.DataFrame:
     features.to_csv("test.csv")
 
     return features
+
 
 values = build_playergame_features(df)
 print(values)
