@@ -9,6 +9,7 @@ class PlayerGameStats:
     game_id: int | None = None
     season: int | None = None
     week: int | None = None
+    team_id: int | None = None
 
     # passing
     passing_attempts: int = 0

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
     start_date=datetime(2023, 1, 1),
     max_active_tasks=5,
 )
-def teams_silver():
+def silver_teams():
 
     @task
     def fetch_teams():
@@ -50,4 +50,4 @@ def teams_silver():
     )
 
 
-teams_silver()
+silver_teams()

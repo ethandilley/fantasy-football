@@ -4,10 +4,8 @@ from datetime import datetime, timezone
 import os
 
 airflow_token = os.environ.get("AIRFLOW_TOKEN")
-# dag = "populate_team_game_stats"
-# dag = "espn_stats"
-# dag = "populate_player_game_stats"
-dag = "games_silver"
+dag = "silver_player_games"
+# dag = "silver_team_games"
 
 BASE_URL = "http://localhost:8080/api/v2"
 headers = {
@@ -29,7 +27,7 @@ def get_in_flight():
     ])
 
 
-for year in range(1999, 2026):
+for year in range(2020, 2026):
     for week in range(1, 19):
         # year = 2014
         # week = 4

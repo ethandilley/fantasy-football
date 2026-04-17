@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
         "batch_size": Param(100, type="integer", minimum=1, maximum=1000),
     },
 )
-def players():
+def bronze_players():
 
     @task
     def delimit_pages(**context):
@@ -100,4 +100,4 @@ def players():
     )
 
 
-players()
+bronze_players()

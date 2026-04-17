@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
         "week": Param(1, type="integer", minimum=1, maximum=18),
     },
 )
-def games_silver():
+def silver_games():
 
     @task
     def fetch_games(**context):
@@ -70,4 +70,4 @@ def games_silver():
     load.expand(data=transform.expand(data=extract.expand(game_path=game_paths)))
 
 
-games_silver()
+silver_games()

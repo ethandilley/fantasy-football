@@ -3,11 +3,29 @@ from dataclasses import asdict
 
 
 class EspnTranslator:
+    @staticmethod
+    def _parse_fraction(value: str) -> tuple[int, int]:
+        """Parse 'made-attempts' or 'made/attempts' strings into (made, attempts)."""
+        for sep in ["-", "/"]:
+            if sep in value:
+                a, b = value.split(sep)
+                return int(a), int(b)
+        return 0, 0
+
+    @staticmethod
+    def _get_stat(statistics: list, name: str) -> dict | None:
+        """Look up a stat entry by name from the statistics list."""
+        for s in statistics:
+            if s["name"] == name:
+                return s
+        return None
+
     def to_player_stats(
         self, game_id: int, year: int, week: int, game_info: dict
     ) -> list[dict]:
         players = {}
         for team in game_info["boxscore"]["players"]:
+            team_id = team["team"]["id"]
             passing_stats = team["statistics"][0]
             rushing_stats = team["statistics"][1]
             receiving_stats = team["statistics"][2]
@@ -27,6 +45,7 @@ class EspnTranslator:
                     player_id,
                     PlayerGameStats(
                         player_id=player_id,
+                        team_id=team_id,
                         name=player,
                         game_id=game_id,
                         season=year,
@@ -53,6 +72,7 @@ class EspnTranslator:
                     player_id,
                     PlayerGameStats(
                         player_id=player_id,
+                        team_id=team_id,
                         name=player,
                         game_id=game_id,
                         season=year,
@@ -77,6 +97,7 @@ class EspnTranslator:
                     player_id,
                     PlayerGameStats(
                         player_id=player_id,
+                        team_id=team_id,
                         name=player,
                         game_id=game_id,
                         season=year,
@@ -100,6 +121,7 @@ class EspnTranslator:
                     player_id,
                     PlayerGameStats(
                         player_id=player_id,
+                        team_id=team_id,
                         name=player,
                         game_id=game_id,
                         season=year,

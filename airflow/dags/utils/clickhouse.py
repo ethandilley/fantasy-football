@@ -13,6 +13,10 @@ class ClickhouseClient:
             host=host, port=port, username=username, password=password
         )
 
+    def query(self, sql):
+        values = self.client.query(sql)
+        return values
+
     def write_team_game_stats(self, data):
         print(data)
         columns = [
@@ -56,6 +60,7 @@ class ClickhouseClient:
             "player_id",
             "name",
             "game_id",
+            "team_id",
             "season",
             "week",
             "passing_attempts",

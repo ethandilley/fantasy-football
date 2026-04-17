@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
         "week": Param(1, type="integer", minimum=1, maximum=18),
     },
 )
-def populate_team_game_stats():
+def silver_team_games():
 
     @task
     def fetch_games(**context):
@@ -62,4 +62,4 @@ def populate_team_game_stats():
     load.expand(teams_game=teams_games)
 
 
-populate_team_game_stats()
+silver_team_games()
