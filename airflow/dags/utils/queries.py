@@ -63,7 +63,8 @@ INSERT INTO gold.playergame
     red_zone_attempts, 
     turnovers,
     team_fumbles_lost, 
-    possession_time_seconds
+    possession_time_seconds,
+    fantasy_points
 )
 SELECT
     p.name                      AS player_name,
@@ -132,7 +133,13 @@ SELECT
     tgs.red_zone_attempts,
     tgs.turnovers,
     tgs.fumbles_lost            AS team_fumbles_lost,
-    tgs.possession_time_seconds
+    tgs.possession_time_seconds,
+    6 * (pgs.passing_tds + pgs.rushing_tds + pgs.receiving_tds)
+    + 0.1 * (pgs.rushing_yards + pgs.receiving_yards)
+    + 0.04 * pgs.passing_yards
+    + pgs.receptions
+    - 2 * (pgs.interceptions + pgs.fumbles_lost)
+    AS fantasy_points
  
 FROM silver.playergamestats pgs
 JOIN silver.players  p   ON p.espn_id  = pgs.player_id

@@ -72,7 +72,10 @@ CREATE OR REPLACE TABLE gold.playergame
     red_zone_attempts INT NOT NULL,
     turnovers INT NOT NULL,
     team_fumbles_lost INT NOT NULL,
-    possession_time_seconds INT NOT NULL
+    possession_time_seconds INT NOT NULL,
+
+    -- calc
+    fantasy_points FLOAT NOT NULL
 )
 ENGINE = REPLACINGMERGETREE()
 ORDER BY (player_id, game_id);
