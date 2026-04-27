@@ -4,3 +4,5 @@ clickhouse
 .env
 .envrc
 airflow/logs/
+
+data/
