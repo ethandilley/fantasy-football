@@ -5,4 +5,4 @@ clickhouse
 .envrc
 airflow/logs/
 
-data/
+tmp/

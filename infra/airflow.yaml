@@ -1,0 +1,67 @@
+executor: SequentialExecutor
+
+redis:
+  enabled: false
+flower:
+  enabled: false
+statsd:
+  enabled: false
+
+postgresql:
+  primary:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+    persistence:
+      size: 1Gi
+
+logs:
+  persistence:
+    enabled: false
+
+apiServer:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+scheduler:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+webserver:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+dagProcessor:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+config:
+  AIRFLOW__CORE__LOAD_EXAMPLES:
+    value: "false"
+  AIRFLOW__CORE__PARALLELISM:
+    value: "2"
+  AIRFLOW__CORE__DAG_CONCURRENCY:
+    value: "2"
+  AIRFLOW__SCHEDULER__MAX_THREADS:
+    value: "1"
