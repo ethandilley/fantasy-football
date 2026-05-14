@@ -149,6 +149,7 @@ async def prediction(client: ClickhouseClient):
 @router.post("/files")
 async def create_file(client: ClickhouseClient, file: Annotated[bytes, File()]):
     predicted = pd.read_csv(BytesIO(file))[["id", "fantasy_points"]]
+
     query = """
         SELECT
             id,

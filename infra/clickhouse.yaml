@@ -25,10 +25,10 @@ spec:
         app: clickhouse
     spec:
       nodeSelector:
-        kubernetes.io/hostname: ethan
+        kubernetes.io/hostname: stone
       containers:
         - name: clickhouse
-          image: clickhouse/clickhouse-server:latest
+          image: clickhouse/clickhouse-server:24.3
           ports:
             - name: http
               containerPort: 8123

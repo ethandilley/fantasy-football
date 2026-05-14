@@ -4,7 +4,15 @@ from datetime import datetime, timezone
 import os
 
 airflow_token = os.environ.get("AIRFLOW_TOKEN")
-dag = "silver_player_games"
+dags = [
+    ("bronze_games", 15),
+    # ("silver_teams", 60),
+    # ("silver_team_games", 60),
+    # ("silver_players", 60),
+    # ("silver_player_games", 60),
+    # ("silver_games", 60),
+    # ("gold_player_games", 60),
+]
 
 BASE_URL = "http://localhost:8080/api/v2"
 headers = {
@@ -15,35 +23,26 @@ headers = {
 MAX_IN_FLIGHT = 5  # running + queued
 
 
-def get_in_flight():
+def get_in_flight(dag):
     url = f"{BASE_URL}/dags/{dag}/dagRuns"
     r = requests.get(url, headers=headers)
     runs = r.json().get("dag_runs", [])
 
-    return len([
-        run for run in runs
-        if run["state"] in ["running", "queued"]
-    ])
+    return len([run for run in runs if run["state"] in ["running", "queued"]])
 
 
-for year in range(1999, 2026):
-    for week in range(1, 19):
-        # year = 2014
-        # week = 4
+for dag, buffer in dags:
+    for year in range(1999, 2026):
+        for week in range(1, 19):
+            print(f"Triggering {year} week {week}")
 
-        while get_in_flight() >= MAX_IN_FLIGHT:
-            print("At capacity (running + queued). Waiting...")
-            time.sleep(5)
+            logical_date = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+            data = {"conf": {"year": year, "week": week}, "logical_date": logical_date}
 
-        print(f"Triggering {year} week {week}")
+            url = f"{BASE_URL}/dags/{dag}/dagRuns"
+            response = requests.post(url, headers=headers, json=data)
 
-        logical_date = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-        data = {"conf": {"year": year, "week": week}, "logical_date": logical_date}
+            print(response.status_code)
+            print(response.json())
 
-        url = f"{BASE_URL}/dags/{dag}/dagRuns"
-        response = requests.post(url, headers=headers, json=data)
-
-        print(response.status_code)
-        print(response.json())
-
-        time.sleep(2)
+            time.sleep(buffer)

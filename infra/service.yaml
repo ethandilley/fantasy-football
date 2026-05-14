@@ -12,16 +12,8 @@ spec:
       labels:
         app: service
     spec:
-      affinity:
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              preference:
-                matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values:
-                      - dilleystone
+      nodeSelector:
+        kubernetes.io/hostname: stone
       containers:
         - name: service
           image: service:latest

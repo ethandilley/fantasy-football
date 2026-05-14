@@ -25,7 +25,7 @@ spec:
         app: minio
     spec:
       nodeSelector:
-        kubernetes.io/hostname: ethan
+        kubernetes.io/hostname: stone
       containers:
         - name: minio
           image: minio/minio:latest

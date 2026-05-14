@@ -1,5 +1,26 @@
-executor: SequentialExecutor
+executor: LocalExecutor
 
+apiSecretKey: "d7b9586092839ef8871b5ed662d9bafcec2becf9b51a74d2ee79029c4cdd6e74"
+
+images:
+  airflow:
+    repository: airflow
+    tag: latest
+    pullPolicy: Never
+  pod_template:
+    repository: airflow
+    tag: latest
+  statsd:
+    repository: airflow
+    tag: latest
+
+dags:
+  gitSync:
+    enabled: true
+    repo: https://github.com/ethandilley/fantasy-football.git
+    branch: main
+    subPath: "airflow/dags"
+    
 redis:
   enabled: false
 flower:
@@ -8,11 +29,16 @@ statsd:
   enabled: false
 
 postgresql:
+  nodeSelector:
+    kubernetes.io/hostname: ethan
   primary:
     resources:
       requests:
-        cpu: 50m
-        memory: 128Mi
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
     persistence:
       size: 1Gi
 
@@ -21,47 +47,66 @@ logs:
     enabled: false
 
 apiServer:
+  nodeSelector:
+    kubernetes.io/hostname: ethan
+  livenessProbe:
+    timeoutSeconds: 30
+    periodSeconds: 30
+    failureThreshold: 5
+  readinessProbe:
+    timeoutSeconds: 30
+    periodSeconds: 30
+    failureThreshold: 5
+  startupProbe:
+    timeoutSeconds: 30
+    periodSeconds: 10
+    failureThreshold: 30
   resources:
     requests:
-      cpu: 50m
-      memory: 128Mi
+      cpu: 1000m
+      memory: 2Gi
     limits:
-      cpu: 200m
-      memory: 256Mi
+      cpu: 2000m
+      memory: 4Gi
 
 scheduler:
+  nodeSelector:
+    kubernetes.io/hostname: ethan
   resources:
     requests:
-      cpu: 50m
-      memory: 128Mi
+      cpu: 1000m
+      memory: 2Gi
     limits:
-      cpu: 200m
-      memory: 256Mi
-
-webserver:
-  resources:
-    requests:
-      cpu: 50m
-      memory: 128Mi
-    limits:
-      cpu: 200m
-      memory: 256Mi
+      cpu: 2000m
+      memory: 4Gi
+  livenessProbe:
+    timeoutSeconds: 60
+    periodSeconds: 60
+    failureThreshold: 5
+  startupProbe:
+    timeoutSeconds: 60
+    periodSeconds: 10
+    failureThreshold: 30
 
 dagProcessor:
-  resources:
-    requests:
-      cpu: 50m
-      memory: 128Mi
-    limits:
-      cpu: 200m
-      memory: 256Mi
+  nodeSelector:
+    kubernetes.io/hostname: ethan
+  enabled: true
 
 config:
   AIRFLOW__CORE__LOAD_EXAMPLES:
     value: "false"
   AIRFLOW__CORE__PARALLELISM:
-    value: "2"
+    value: "8"
   AIRFLOW__CORE__DAG_CONCURRENCY:
-    value: "2"
+    value: "8"
   AIRFLOW__SCHEDULER__MAX_THREADS:
-    value: "1"
+    value: "2"
+  AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL:
+    value: "60"
+  AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL:
+    value: "120"
+  AIRFLOW__DATABASE__SQL_ALCHEMY_POOL_SIZE:
+    value: "5"
+  AIRFLOW__DATABASE__SQL_ALCHEMY_MAX_OVERFLOW:
+    value: "5"
