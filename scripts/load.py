@@ -5,12 +5,10 @@ import os
 
 airflow_token = os.environ.get("AIRFLOW_TOKEN")
 dags = [
-    ("bronze_games", 15),
-    # ("silver_teams", 60),
+    # ("bronze_games", 15),
     # ("silver_team_games", 60),
-    # ("silver_players", 60),
     # ("silver_player_games", 60),
-    # ("silver_games", 60),
+    ("silver_games", 20),
     # ("gold_player_games", 60),
 ]
 

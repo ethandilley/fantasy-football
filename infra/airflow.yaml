@@ -18,7 +18,7 @@ dags:
   gitSync:
     enabled: true
     repo: https://github.com/ethandilley/fantasy-football.git
-    branch: main
+    branch: some-k8s
     subPath: "airflow/dags"
     
 redis:
