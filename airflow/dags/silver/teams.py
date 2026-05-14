@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import logging
 
 from airflow.sdk import dag, task
@@ -18,7 +18,7 @@ def silver_teams():
     @task
     def fetch_teams():
         minio_client = MinioClient()
-        today = str(date.today())
+        today = str(date.today() - timedelta(1))
         objects = minio_client.fetch_team_objects("bronze", today)
         object_names = [o.object_name for o in objects]
         return object_names

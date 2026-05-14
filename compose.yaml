@@ -44,6 +44,7 @@ services:
       - "8000:8000"
     volumes:
       - ./service/src:/app/src
+
   minio:
     image: minio/minio:latest
     container_name: minio
