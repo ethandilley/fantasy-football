@@ -14,7 +14,7 @@ A dataplatform for fantasy football.
     - stone (control-plane) node: mac m2 air, 8 core, 8gb ram, 512gb ssd
     - dilley (weak, edge) node: raspberry pi 4 model B, 4 core, 8gb ram, 1TB external ssd
     - ethan (strong, intermittent, edge) node: pc build, 8 core, 32gb ram, 1TB ssd, 5070ti gpu
-- basic api found [dilleystone.com](http://dilleystone.com:8000/docs) 
+- basic api found [dilleystone.com](http://dilleystone.com) 
 
 ## Details
 
