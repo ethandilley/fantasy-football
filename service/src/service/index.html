@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>fantasy football · dilleystone</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Berkeley+Mono&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0d0b;
+      --bg-surface: #141412;
+      --bg-raised: #1a1a18;
+      --border: rgba(255,255,255,0.07);
+      --border-strong: rgba(255,255,255,0.12);
+      --text: #e8e6e0;
+      --text-muted: #6b6963;
+      --text-mid: #9a9790;
+      --accent: #c8f56a;
+      --accent-dim: rgba(200, 245, 106, 0.12);
+      --accent-border: rgba(200, 245, 106, 0.3);
+      --mono: 'Berkeley Mono', 'Fira Code', monospace;
+      --sans: 'DM Sans', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 3rem 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-left {}
+
+    .breadcrumb {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      margin-bottom: 0.5rem;
+    }
+
+    .breadcrumb a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .breadcrumb a:hover { color: var(--accent); }
+
+    h1 {
+      font-family: var(--mono);
+      font-size: 1.6rem;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--accent);
+      background: var(--accent-dim);
+      border: 1px solid var(--accent-border);
+      padding: 5px 12px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ── STACK STRIP ── */
+    .stack-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    .stack-item {
+      background: var(--bg-surface);
+      padding: 1rem 1.25rem;
+    }
+
+    .stack-label {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .stack-value {
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    /* ── GRID ── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+
+    .card-title {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 1.1rem;
+    }
+
+    /* ── NODES ── */
+    .node-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .node-row:last-child { margin-bottom: 0; }
+
+    .node-name {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--text);
+      width: 52px;
+      flex-shrink: 0;
+    }
+
+    .node-bar-wrap {
+      flex: 1;
+      height: 22px;
+      background: var(--bg-raised);
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .node-bar {
+      height: 100%;
+      background: linear-gradient(90deg, rgba(200,245,106,0.18), rgba(200,245,106,0.08));
+      border-right: 1px solid var(--accent-border);
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    .node-meta {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--text-mid);
+      padding: 0 8px;
+      position: relative;
+      z-index: 1;
+      white-space: nowrap;
+    }
+
+    .node-tag {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .node-tag.control { border-color: var(--accent-border); color: var(--accent); background: var(--accent-dim); }
+    .node-tag.edge { border-color: rgba(255,255,255,0.1); }
+    .node-tag.gpu { border-color: rgba(100,160,255,0.3); color: #80b4ff; background: rgba(100,160,255,0.07); }
+
+    /* ── TABLES / LAYERS ── */
+    .layer {
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .layer:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+
+    .layer-header {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .layer-name {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      font-weight: 400;
+      letter-spacing: 0.06em;
+    }
+
+    .layer-name.silver { color: #b0aeb5; }
+    .layer-name.gold { color: #e0b84a; }
+
+    .layer-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .table-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .chip {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--text-mid);
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      border-radius: 3px;
+    }
+
+    /* ── ENDPOINTS ── */
+    .endpoint {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .endpoint:last-child { border-bottom: none; }
+
+    .method {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      font-weight: 400;
+      padding: 3px 7px;
+      border-radius: 3px;
+      letter-spacing: 0.04em;
+      width: 38px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .get  { background: rgba(100,160,255,0.1); color: #80b4ff; border: 1px solid rgba(100,160,255,0.2); }
+    .post { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent-border); }
+
+    .ep-path {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .ep-desc {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--text-muted);
+    }
+
+    /* ── CHECKLIST ── */
+    .todo-list { list-style: none; }
+
+    .todo-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .todo-item:last-child { border-bottom: none; }
+
+    .todo-item.done { opacity: 0.35; }
+
+    .todo-item.done .todo-text { text-decoration: line-through; }
+
+    .todo-check {
+      width: 14px;
+      height: 14px;
+      border: 1px solid var(--border-strong);
+      border-radius: 2px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      background: transparent;
+    }
+
+    .todo-item.done .todo-check {
+      background: var(--accent-dim);
+      border-color: var(--accent-border);
+    }
+
+    .todo-check svg {
+      display: none;
+      width: 9px;
+      height: 9px;
+    }
+
+    .todo-item.done .todo-check svg { display: block; }
+
+    .todo-text {
+      font-family: var(--sans);
+      font-size: 0.8rem;
+      color: var(--text-mid);
+      font-weight: 300;
+    }
+
+    .todo-item input[type="checkbox"] { display: none; }
+
+    /* ── ISSUES ── */
+    .issue-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .issue {
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-left: 2px solid rgba(255,80,80,0.4);
+      border-radius: 4px;
+      padding: 8px 10px;
+    }
+
+    .issue-text {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    /* ── FULL-WIDTH CARD ── */
+    .card-full {
+      margin-bottom: 12px;
+    }
+
+    /* ── PIPELINE DIAGRAM ── */
+    .pipeline {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      margin-top: 0.25rem;
+    }
+
+    .pipe-stage {
+      flex: 1;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      position: relative;
+    }
+
+    .pipe-stage + .pipe-stage {
+      margin-left: 28px;
+    }
+
+    .pipe-stage::after {
+      content: '→';
+      position: absolute;
+      right: -20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      z-index: 2;
+    }
+
+    .pipe-stage:last-child::after { display: none; }
+
+    .pipe-layer {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .pipe-layer.bronze { color: #c87941; }
+    .pipe-layer.silver { color: #b0aeb5; }
+    .pipe-layer.gold   { color: #e0b84a; }
+    .pipe-layer.serve  { color: #80b4ff; }
+
+    .pipe-tool {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .pipe-desc {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .pipe-tables {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .pipe-table {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      color: var(--text-mid);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 2px 5px;
+      display: inline-block;
+      align-self: flex-start;
+    }
+
+    /* ── BUCKET TREE ── */
+    .tree { font-family: var(--mono); font-size: 0.72rem; }
+
+    .tree-node {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .tree-node:hover .tree-label { color: var(--text); }
+
+    .tree-indent { display: flex; align-items: stretch; }
+
+    .tree-guide {
+      width: 16px;
+      flex-shrink: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .tree-guide-line {
+      width: 1px;
+      background: var(--border-strong);
+      height: 100%;
+    }
+
+    .tree-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 0;
+    }
+
+    .tree-toggle {
+      width: 12px;
+      height: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .tree-toggle svg {
+      width: 8px;
+      height: 8px;
+      transition: transform 0.15s;
+    }
+
+    .tree-toggle.open svg { transform: rotate(90deg); }
+
+    .tree-icon {
+      font-size: 0.65rem;
+      flex-shrink: 0;
+    }
+
+    .tree-label {
+      color: var(--text-mid);
+      transition: color 0.1s;
+    }
+
+    .tree-label.dir { color: var(--text); }
+    .tree-label.bucket { color: var(--accent); }
+
+    .tree-comment {
+      color: var(--text-muted);
+      font-size: 0.6rem;
+      margin-left: 6px;
+    }
+
+    .tree-children { display: block; }
+    .tree-children.collapsed { display: none; }
+
+    /* ── DAG SECTION ── */
+    .dag-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 14px;
+    }
+
+    .dag-tab {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      padding: 4px 10px;
+      border-radius: 3px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.12s;
+      letter-spacing: 0.03em;
+    }
+
+    .dag-tab:hover { color: var(--text-mid); border-color: var(--border-strong); }
+    .dag-tab.active { background: var(--bg-raised); color: var(--text); border-color: var(--border-strong); }
+
+    .dag-panel { display: none; }
+    .dag-panel.active { display: block; }
+
+    .dag-meta {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .dag-badge {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      padding: 2px 7px;
+      border-radius: 2px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .dag-badge.schedule { border-color: rgba(200,245,106,0.2); color: rgba(200,245,106,0.7); }
+    .dag-badge.wip { border-color: rgba(255,160,60,0.3); color: rgba(255,160,60,0.8); }
+
+    .dag-flow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .dag-task {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      padding: 5px 9px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--text-mid);
+      position: relative;
+    }
+
+    .dag-task.expand-task { border-color: rgba(100,160,255,0.25); color: #80b4ff; }
+    .dag-task.wip-task { border-color: rgba(255,160,60,0.25); color: rgba(255,160,60,0.8); opacity: 0.6; }
+
+    .dag-arrow {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+
+    .dag-expand-note {
+      font-family: var(--mono);
+      font-size: 0.57rem;
+      color: var(--text-muted);
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── SERVICE REGISTRY ── */
+    .service-row {
+      display: grid;
+      grid-template-columns: 110px 1fr 1fr 90px;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 0.68rem;
+    }
+
+    .service-row:last-child { border-bottom: none; }
+
+    .service-row.header-row {
+      font-size: 0.58rem;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding-bottom: 6px;
+    }
+
+    .svc-name { color: var(--text); }
+    .svc-image { color: var(--text-muted); font-size: 0.6rem; }
+    .svc-ports { color: var(--text-mid); }
+
+    .svc-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.6rem;
+      transition: color 0.12s;
+      text-align: right;
+    }
+
+    .svc-link:hover { color: var(--accent); }
+
+    /* ── GOALS ── */
+    .goals-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .goal-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+    }
+
+    .goal-num {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      min-width: 18px;
+      padding-top: 1px;
+    }
+
+    .goal-text {
+      font-family: var(--sans);
+      font-size: 0.8rem;
+      color: var(--text-mid);
+      font-weight: 300;
+      line-height: 1.4;
+    }
+
+    .goal-text strong {
+      color: var(--text);
+      font-weight: 400;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-mono {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--text-muted);
+    }
+
+    .footer-link {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-link:hover { color: var(--accent); }
+
+    a { color: inherit; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-left">
+      <div class="breadcrumb">
+        <a href="http://dilleystone.com:8000/docs" target="_blank">dilleystone.com:8000</a>
+        &nbsp;/&nbsp; fantasy-football
+      </div>
+      <h1>fantasy football</h1>
+    </div>
+    <div class="status-pill">
+      <span class="status-dot"></span>
+      platform online
+    </div>
+  </header>
+
+  <div class="stack-strip">
+    <div class="stack-item">
+      <div class="stack-label">nodes</div>
+      <div class="stack-value">3</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-label">bronze</div>
+      <div class="stack-value">minio</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-label">silver / gold</div>
+      <div class="stack-value">clickhouse</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-label">orchestration</div>
+      <div class="stack-value">k3s + airflow</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="card-title">nodes</div>
+
+      <div class="node-row">
+        <span class="node-name">stone</span>
+        <div class="node-bar-wrap">
+          <div class="node-bar" style="width: 45%;"></div>
+          <span class="node-meta">m2 air · 8gb · 512gb</span>
+        </div>
+        <span class="node-tag control">control-plane</span>
+      </div>
+
+      <div class="node-row">
+        <span class="node-name">dilley</span>
+        <div class="node-bar-wrap">
+          <div class="node-bar" style="width: 25%;"></div>
+          <span class="node-meta">pi 4b · 8gb · 1TB</span>
+        </div>
+        <span class="node-tag edge">edge</span>
+      </div>
+
+      <div class="node-row">
+        <span class="node-name">ethan</span>
+        <div class="node-bar-wrap">
+          <div class="node-bar" style="width: 85%;"></div>
+          <span class="node-meta">pc · 32gb · 5070ti</span>
+        </div>
+        <span class="node-tag gpu">gpu · edge</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">clickhouse tables</div>
+
+      <div class="layer">
+        <div class="layer-header">
+          <span class="layer-name silver">silver</span>
+          <div class="layer-line"></div>
+        </div>
+        <div class="table-chips">
+          <span class="chip">games</span>
+          <span class="chip">players</span>
+          <span class="chip">playergamestats</span>
+          <span class="chip">teamgamestats</span>
+          <span class="chip">teams</span>
+        </div>
+      </div>
+
+      <div class="layer">
+        <div class="layer-header">
+          <span class="layer-name gold">gold</span>
+          <div class="layer-line"></div>
+        </div>
+        <div class="table-chips">
+          <span class="chip">playergame</span>
+          <span class="chip">playergame_features</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card card-full">
+    <div class="card-title">data pipeline</div>
+    <div class="pipeline">
+      <div class="pipe-stage">
+        <div class="pipe-layer bronze">bronze</div>
+        <div class="pipe-tool">minio</div>
+        <div class="pipe-desc">raw json.gz from espn api. partitioned by source, season, week, date.</div>
+        <div class="pipe-tables">
+          <span class="pipe-table">events/</span>
+          <span class="pipe-table">players/</span>
+          <span class="pipe-table">stats/</span>
+          <span class="pipe-table">teams/</span>
+        </div>
+      </div>
+      <div class="pipe-stage">
+        <div class="pipe-layer silver">silver</div>
+        <div class="pipe-tool">clickhouse</div>
+        <div class="pipe-desc">standardized, normalized, cleaned. structured schema.</div>
+        <div class="pipe-tables">
+          <span class="pipe-table">games</span>
+          <span class="pipe-table">players</span>
+          <span class="pipe-table">playergamestats</span>
+          <span class="pipe-table">teamgamestats</span>
+          <span class="pipe-table">teams</span>
+        </div>
+      </div>
+      <div class="pipe-stage">
+        <div class="pipe-layer gold">gold</div>
+        <div class="pipe-tool">clickhouse</div>
+        <div class="pipe-desc">aggregated. feature-engineered. model-ready.</div>
+        <div class="pipe-tables">
+          <span class="pipe-table">playergame</span>
+          <span class="pipe-table">playergame_features</span>
+        </div>
+      </div>
+      <div class="pipe-stage">
+        <div class="pipe-layer serve">serve</div>
+        <div class="pipe-tool">fastapi</div>
+        <div class="pipe-desc">training data, testing data, model evaluation endpoints.</div>
+        <div class="pipe-tables">
+          <span class="pipe-table">/training-data</span>
+          <span class="pipe-table">/testing-data</span>
+          <span class="pipe-table">/evaluate</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card card-full">
+    <div class="card-title">api &mdash; <a href="http://dilleystone.com:8000/docs" target="_blank" style="color: var(--text-muted); text-decoration: none; font-size: 0.6rem;">dilleystone.com:8000/docs ↗</a></div>
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <span class="ep-path">/training-data</span>
+      <span class="ep-desc">gold layer · causal features</span>
+    </div>
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <span class="ep-path">/testing-data</span>
+      <span class="ep-desc">gold layer · no causal info</span>
+    </div>
+    <div class="endpoint">
+      <span class="method post">POST</span>
+      <span class="ep-path">/evaluate</span>
+      <span class="ep-desc">score model predictions</span>
+    </div>
+  </div>
+
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="card-title">next steps</div>
+      <ul class="todo-list" id="checklist">
+        <li class="todo-item" onclick="toggle(this)">
+          <input type="checkbox">
+          <div class="todo-check"><svg viewBox="0 0 10 10" fill="none" stroke="#c8f56a" stroke-width="1.5"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></div>
+          <span class="todo-text">write readme</span>
+        </li>
+        <li class="todo-item" onclick="toggle(this)">
+          <input type="checkbox">
+          <div class="todo-check"><svg viewBox="0 0 10 10" fill="none" stroke="#c8f56a" stroke-width="1.5"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></div>
+          <span class="todo-text">add tls + password management</span>
+        </li>
+        <li class="todo-item" onclick="toggle(this)">
+          <input type="checkbox">
+          <div class="todo-check"><svg viewBox="0 0 10 10" fill="none" stroke="#c8f56a" stroke-width="1.5"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></div>
+          <span class="todo-text">rearchitect dags</span>
+        </li>
+        <li class="todo-item" onclick="toggle(this)">
+          <input type="checkbox">
+          <div class="todo-check"><svg viewBox="0 0 10 10" fill="none" stroke="#c8f56a" stroke-width="1.5"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></div>
+          <span class="todo-text">do some modeling</span>
+        </li>
+        <li class="todo-item" onclick="toggle(this)">
+          <input type="checkbox">
+          <div class="todo-check"><svg viewBox="0 0 10 10" fill="none" stroke="#c8f56a" stroke-width="1.5"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></div>
+          <span class="todo-text">rewrite service in rust</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">known issues</div>
+      <div class="issue-grid">
+        <div class="issue"><span class="issue-text">backfills suck</span></div>
+        <div class="issue"><span class="issue-text">api is rough</span></div>
+        <div class="issue"><span class="issue-text">k3s is messy</span></div>
+        <div class="issue"><span class="issue-text">passwords in plaintext</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card card-full">
+    <div class="card-title">airflow dags &mdash; <a href="https://github.com/ethandilley/fantasy-football/tree/main/airflow/dags" target="_blank" style="color:var(--text-muted);text-decoration:none;font-size:0.6rem;">github ↗</a></div>
+    <div class="dag-tabs">
+      <button class="dag-tab active" onclick="showDag('bronze_games')">bronze_games</button>
+      <button class="dag-tab" onclick="showDag('bronze_players')">bronze_players</button>
+      <button class="dag-tab" onclick="showDag('silver_games')">silver_games</button>
+      <button class="dag-tab" onclick="showDag('silver_player_games')">silver_player_games</button>
+      <button class="dag-tab" onclick="showDag('gold_player_games')">gold_player_games</button>
+    </div>
+
+    <div class="dag-panel active" id="dag-bronze_games">
+      <div class="dag-meta">
+        <span class="dag-badge schedule">@daily</span>
+        <span class="dag-badge">espn → minio</span>
+        <span class="dag-badge">params: year, week</span>
+      </div>
+      <div class="dag-flow">
+        <div class="dag-task expand-task">get_events</div>
+        <span class="dag-arrow">→</span>
+        <div class="dag-task expand-task">get_stats.expand(game_id=ids)</div>
+      </div>
+      <div class="dag-expand-note">get_events fetches event list + writes events/season={y}/week={w}/data.json.gz · get_stats fans out per game_id → stats/{y}/{w}/{id}/data.json.gz</div>
+    </div>
+
+    <div class="dag-panel" id="dag-bronze_players">
+      <div class="dag-meta">
+        <span class="dag-badge schedule">@daily</span>
+        <span class="dag-badge">espn → minio</span>
+        <span class="dag-badge">params: batch_size</span>
+        <span class="dag-badge">max_active_tasks: 5</span>
+      </div>
+      <div class="dag-flow">
+        <div class="dag-task">delimit_pages</div>
+        <span class="dag-arrow">→</span>
+        <div class="dag-task expand-task">extract_refs.expand</div>
+        <span class="dag-arrow">→</span>
+        <div class="dag-task expand-task">load_refs.expand</div>
+        <span class="dag-arrow">→</span>
+        <div class="dag-task expand-task">extract_players.expand</div>
+        <span class="dag-arrow">→</span>
+        <div class="dag-task expand-task">load_players.expand</div>
+        <span class="dag-arrow">→</span>
+        <div class="dag-task">cleanup</div>
+      </div>
+      <div class="dag-expand-note">delimit_pages calculates page count from player_count // batch_size · players fetched concurrently with ThreadPoolExecutor(max_workers=10) per page · writes espn/raw/players/date={today}/refs/page={n}/data.json.gz</div>
+    </div>
+
+    <div class="dag-panel" id="dag-silver_games">
+      <div class="dag-meta">
+        <span class="dag-badge schedule">@daily</span>
+        <span class="dag-badge">minio → clickhouse</span>
+        <span class="dag-badge">params: year, week</span>
+      </div>
+      <div class="dag-flow">
+        <div class="dag-task">fetch_games</div>
+        <span class="dag-arrow">→</span>
+        <div class="dag-task expand-task">extract.expand(game_path)</div>
+        <span class="dag-arrow">→</span>
+        <div class="dag-task expand-task">transform.expand</div>
+        <span class="dag-arrow">→</span>
+        <div class="dag-task expand-task">load.expand</div>
+      </div>
+      <div class="dag-expand-note">transform pulls espn_id, slug, season, week, home/away team ids + scores, game_date · weather_condition + temperature hardcoded (sunny, 70°F) — a known gap</div>
+    </div>
+
+    <div class="dag-panel" id="dag-silver_player_games">
+      <div class="dag-meta">
+        <span class="dag-badge schedule">@daily</span>
+        <span class="dag-badge">minio → clickhouse</span>
+      </div>
+      <div class="dag-flow">
+        <div class="dag-task expand-task">fetch → extract.expand → transform.expand → load.expand</div>
+      </div>
+      <div class="dag-expand-note">same pattern as silver_games — reads stats json.gz from bronze, maps to playergamestats schema, writes to clickhouse silver layer</div>
+    </div>
+
+    <div class="dag-panel" id="dag-gold_player_games">
+      <div class="dag-meta">
+        <span class="dag-badge schedule">@daily</span>
+        <span class="dag-badge">clickhouse silver → gold</span>
+      </div>
+      <div class="dag-flow">
+        <div class="dag-task">load (INSERT_GOLD)</div>
+        <span class="dag-arrow">→</span>
+        <div class="dag-task wip-task">build_features ⚠ wip</div>
+      </div>
+      <div class="dag-expand-note">load runs INSERT_GOLD SQL to aggregate silver tables into gold.playergame · build_features reads playergame → fantasy points calc (passing_tds×6, rushing/receiving yards×0.1, etc.) is commented out pending implementation</div>
+    </div>
+  </div>
+
+  <div class="card card-full">
+    <div class="card-title">service registry</div>
+    <div class="service-row header-row">
+      <span>service</span>
+      <span>image</span>
+      <span>ports</span>
+      <span style="text-align:right">link</span>
+    </div>
+    <div class="service-row">
+      <span class="svc-name">minio</span>
+      <span class="svc-image">minio/minio</span>
+      <span class="svc-ports">9000 (s3 api) · 9001 (ui)</span>
+      <a class="svc-link" href="http://dilleystone.com:9001" target="_blank">:9001 ↗</a>
+    </div>
+    <div class="service-row">
+      <span class="svc-name">clickhouse</span>
+      <span class="svc-image">clickhouse/clickhouse-server</span>
+      <span class="svc-ports">8123 (http) · 9000 (native)</span>
+      <span class="svc-link" style="color:var(--text-muted)">internal</span>
+    </div>
+    <div class="service-row">
+      <span class="svc-name">airflow</span>
+      <span class="svc-image">apache/airflow</span>
+      <span class="svc-ports">8080 (webserver)</span>
+      <a class="svc-link" href="http://dilleystone.com:8080" target="_blank">:8080 ↗</a>
+    </div>
+    <div class="service-row">
+      <span class="svc-name">fastapi</span>
+      <span class="svc-image">python · uvicorn</span>
+      <span class="svc-ports">8000 (http)</span>
+      <a class="svc-link" href="http://dilleystone.com:8000/docs" target="_blank">:8000/docs ↗</a>
+    </div>
+    <div class="service-row">
+      <span class="svc-name">k3s</span>
+      <span class="svc-image">rancher/k3s</span>
+      <span class="svc-ports">6443 (api-server)</span>
+      <span class="svc-link" style="color:var(--text-muted)">internal</span>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">minio bucket</div>
+      <div class="tree" id="tree"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">goals</div>
+      <div class="goals-list">
+        <div class="goal-item">
+          <span class="goal-num">01</span>
+          <span class="goal-text"><strong>learn rust</strong> — rewrite the fastapi service as the first real project</span>
+        </div>
+        <div class="goal-item">
+          <span class="goal-num">02</span>
+          <span class="goal-text"><strong>build e2e</strong> — own the full stack: ingestion, storage, features, modeling, serving</span>
+        </div>
+        <div class="goal-item">
+          <span class="goal-num">03</span>
+          <span class="goal-text"><strong>win fantasy</strong> — the whole point</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="footer-mono">medallion architecture · minio → clickhouse → fastapi</span>
+    <a href="http://dilleystone.com:8000/docs" target="_blank" class="footer-link">docs ↗</a>
+  </footer>
+
+  <script>
+    function toggle(li) {
+      li.classList.toggle('done');
+      li.querySelector('input').checked = li.classList.contains('done');
+    }
+
+    function showDag(id) {
+      document.querySelectorAll('.dag-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.dag-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('dag-' + id).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    const TREE = {
+      name: 'bronze', type: 'bucket', children: [
+        { name: 'raw', type: 'dir', children: [
+          { name: 'events', type: 'dir', children: [
+            { name: 'season=1999', type: 'dir', children: [
+              { name: 'week=1', type: 'dir', children: [
+                { name: 'data.json.gz', type: 'file' }
+              ]},
+              { name: 'week=2', type: 'dir', children: [
+                { name: 'data.json.gz', type: 'file' }
+              ]}
+            ]}
+          ]},
+          { name: 'players', type: 'dir', children: [
+            { name: 'date=2026-04-15', type: 'dir', children: [
+              { name: 'players', type: 'dir', children: [
+                { name: 'page=0', type: 'dir', children: [{ name: 'data.json.gz', type: 'file' }]},
+                { name: 'page=1', type: 'dir', children: [{ name: 'data.json.gz', type: 'file' }]}
+              ]}
+            ]}
+          ]},
+          { name: 'stats', type: 'dir', comment: '...', children: [] },
+          { name: 'teams', type: 'dir', comment: '...', children: [] }
+        ]}
+      ]
+    };
+
+    function buildTree(node, depth) {
+      const wrap = document.createElement('div');
+
+      const isExpandable = node.children && node.children.length > 0;
+      const startOpen = depth < 2;
+
+      const row = document.createElement('div');
+      row.className = 'tree-row';
+
+      const toggle = document.createElement('div');
+      toggle.className = 'tree-toggle' + (startOpen ? ' open' : '');
+      if (isExpandable) {
+        toggle.innerHTML = `<svg viewBox="0 0 8 8" fill="none"><polyline points="2,1 6,4 2,7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`;
+        toggle.style.color = 'var(--text-muted)';
+      } else {
+        toggle.innerHTML = '';
+      }
+
+      const icon = document.createElement('span');
+      icon.className = 'tree-icon';
+      icon.textContent = node.type === 'bucket' ? '◈' : node.type === 'dir' ? '▸' : '·';
+      icon.style.color = node.type === 'bucket' ? 'var(--accent)' : node.type === 'dir' ? 'var(--text-mid)' : 'var(--text-muted)';
+
+      const label = document.createElement('span');
+      label.className = 'tree-label' + (node.type === 'bucket' ? ' bucket' : node.type === 'dir' ? ' dir' : '');
+      label.textContent = node.name;
+
+      row.appendChild(toggle);
+      row.appendChild(icon);
+      row.appendChild(label);
+
+      if (node.comment) {
+        const c = document.createElement('span');
+        c.className = 'tree-comment';
+        c.textContent = node.comment;
+        row.appendChild(c);
+      }
+
+      wrap.appendChild(row);
+
+      if (isExpandable) {
+        const childWrap = document.createElement('div');
+        childWrap.className = 'tree-children' + (startOpen ? '' : ' collapsed');
+
+        const indentWrap = document.createElement('div');
+        indentWrap.style.display = 'flex';
+
+        const guide = document.createElement('div');
+        guide.className = 'tree-guide';
+        const line = document.createElement('div');
+        line.className = 'tree-guide-line';
+        guide.appendChild(line);
+
+        const childContent = document.createElement('div');
+        childContent.style.flex = '1';
+        node.children.forEach(child => {
+          childContent.appendChild(buildTree(child, depth + 1));
+        });
+
+        indentWrap.appendChild(guide);
+        indentWrap.appendChild(childContent);
+        childWrap.appendChild(indentWrap);
+        wrap.appendChild(childWrap);
+
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', () => {
+          const open = !childWrap.classList.contains('collapsed');
+          childWrap.classList.toggle('collapsed', open);
+          toggle.classList.toggle('open', !open);
+        });
+      }
+
+      return wrap;
+    }
+
+    document.getElementById('tree').appendChild(buildTree(TREE, 0));
+  </script>
+
+</body>
+</html>
