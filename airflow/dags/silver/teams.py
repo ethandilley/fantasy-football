@@ -18,7 +18,8 @@ def silver_teams():
     @task
     def fetch_teams():
         minio_client = MinioClient()
-        today = str(date.today() - timedelta(1))
+        # today = str(date.today() - timedelta(1))
+        today = str(date.today())
         objects = minio_client.fetch_team_objects("bronze", today)
         object_names = [o.object_name for o in objects]
         return object_names
