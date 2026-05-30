@@ -18,7 +18,7 @@ dags:
   gitSync:
     enabled: true
     repo: https://github.com/ethandilley/fantasy-football.git
-    branch: some-k8s
+    branch: more-kaggle
     subPath: "airflow/dags"
     
 redis:
@@ -30,7 +30,7 @@ statsd:
 
 postgresql:
   nodeSelector:
-    kubernetes.io/hostname: ethan
+    kubernetes.io/hostname: bbbs
   primary:
     resources:
       requests:
@@ -48,7 +48,7 @@ logs:
 
 apiServer:
   nodeSelector:
-    kubernetes.io/hostname: ethan
+    kubernetes.io/hostname: bbbs
   livenessProbe:
     timeoutSeconds: 30
     periodSeconds: 30
@@ -71,7 +71,7 @@ apiServer:
 
 scheduler:
   nodeSelector:
-    kubernetes.io/hostname: ethan
+    kubernetes.io/hostname: bbbs
   resources:
     requests:
       cpu: 1000m
@@ -90,7 +90,7 @@ scheduler:
 
 dagProcessor:
   nodeSelector:
-    kubernetes.io/hostname: ethan
+    kubernetes.io/hostname: bbbs
   enabled: true
 
 config:
