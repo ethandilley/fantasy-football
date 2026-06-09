@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: main
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  tls:
+    - hosts:
+        - fantasy.dilleystone.com
+        - wiki.dilleystone.com
+      secretName: dilleystone-tls
+  rules:
+    - host: fantasy.dilleystone.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: service
+                port:
+                  number: 8000
+    - host: wiki.dilleystone.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: wiki
+                port:
+                  number: 80
