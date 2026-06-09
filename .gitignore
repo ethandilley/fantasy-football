@@ -4,5 +4,6 @@ clickhouse
 .env
 .envrc
 airflow/logs/
+*.pyc
 
 tmp/
