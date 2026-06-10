@@ -43,8 +43,7 @@ class EspnClient:
         url = f"{self.CORE_URL}/{self.FOOTBALL_PATH}/{events_path}"
         return self._get(url)
 
-    def get_event_ids(self, year: int, week: int):
-        data = self.get_events(year, week)
+    def get_event_ids(self, data):
 
         ids = []
         for item in data.get("items", []):

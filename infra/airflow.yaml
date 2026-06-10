@@ -4,21 +4,21 @@ apiSecretKey: "d7b9586092839ef8871b5ed662d9bafcec2becf9b51a74d2ee79029c4cdd6e74"
 
 images:
   airflow:
-    repository: airflow
+    repository: 192.168.0.69:30500/airflow
     tag: latest
-    pullPolicy: Never
+    pullPolicy: Always
   pod_template:
-    repository: airflow
+    repository: 192.168.0.69:30500/airflow
     tag: latest
   statsd:
-    repository: airflow
+    repository: 192.168.0.69:30500/airflow
     tag: latest
 
 dags:
   gitSync:
     enabled: true
     repo: https://github.com/ethandilley/fantasy-football.git
-    branch: more-kaggle
+    branch: main
     subPath: "airflow/dags"
     
 redis:
@@ -29,9 +29,9 @@ statsd:
   enabled: false
 
 postgresql:
-  nodeSelector:
-    kubernetes.io/hostname: bbbs
   primary:
+    nodeSelector:
+      kubernetes.io/hostname: stone
     resources:
       requests:
         cpu: 100m
@@ -47,8 +47,6 @@ logs:
     enabled: false
 
 apiServer:
-  nodeSelector:
-    kubernetes.io/hostname: bbbs
   livenessProbe:
     timeoutSeconds: 30
     periodSeconds: 30
@@ -70,8 +68,6 @@ apiServer:
       memory: 4Gi
 
 scheduler:
-  nodeSelector:
-    kubernetes.io/hostname: bbbs
   resources:
     requests:
       cpu: 1000m
@@ -89,8 +85,6 @@ scheduler:
     failureThreshold: 30
 
 dagProcessor:
-  nodeSelector:
-    kubernetes.io/hostname: bbbs
   enabled: true
 
 config:

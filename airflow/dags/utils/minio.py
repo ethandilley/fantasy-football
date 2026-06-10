@@ -1,4 +1,3 @@
-from datetime import date
 import gzip
 import io
 import json
@@ -20,7 +19,7 @@ class MinioClient:
             secure=secure,
         )
 
-    def write_data(self, bucket: str, object_name: str, data: dict):
+    def write_data(self, bucket: str, object_name: str, data: dict | list):
         json_bytes = json.dumps(data).encode("utf-8")
 
         buf = io.BytesIO()
@@ -44,16 +43,16 @@ class MinioClient:
             raw_bytes = gz.read()
             return json.loads(raw_bytes.decode("utf-8"))
 
-    def fetch_team_objects(self, bucket: str, today: str):
-        prefix = f"espn/raw/teams/date={today}"
+    def fetch_team_objects(self, bucket: str):
+        prefix = "espn/raw/teams"
         return self.client.list_objects(
             bucket_name=bucket,
             prefix=prefix,
             recursive=True,
         )
 
-    def fetch_player_objects(self, bucket: str, today: str):
-        prefix = f"espn/raw/players/date={today}/players"
+    def fetch_player_objects(self, bucket: str):
+        prefix = "espn/raw/players"
         return self.client.list_objects(
             bucket_name=bucket,
             prefix=prefix,
@@ -74,10 +73,8 @@ class MinioClient:
     def get_stats_object_name(self, year: int, week: int, game_id: str):
         return f"espn/raw/stats/season={year}/week={week}/game={game_id}/data.json.gz"
 
-    def get_players_object_name(self, type: str, page: int) -> str:
-        today = str(date.today())
-        return f"espn/raw/players/date={today}/{type}/page={page}/data.json.gz"
+    def get_players_object_name(self, page: int) -> str:
+        return f"espn/raw/players/page={page}/data.json.gz"
 
     def get_teams_object_name(self, team_id) -> str:
-        today = str(date.today())
-        return f"espn/raw/teams/date={today}/team_id={team_id}/data.json.gz"
+        return f"espn/raw/teams/team_id={team_id}/data.json.gz"

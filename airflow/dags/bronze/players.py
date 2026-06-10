@@ -1,5 +1,3 @@
-# get number of total players
-# get split it up by page/limit
 import logging
 from datetime import datetime, date
 
@@ -35,38 +33,23 @@ def bronze_players():
         page, batch_size = values
         espn_client = EspnClient()
         refs = espn_client.get_players(page=page, limit=batch_size)
-        return {"page": page, "refs": refs}
-
-    @task
-    def load_refs(result: dict):
-        print(result)
-        page, refs = result["page"], result["refs"]
-        minio_client = MinioClient()
-        object_name = (
-            f"espn/raw/players/date={date.today()}/refs/page={page}/data.json.gz"
-        )
-        response = minio_client.write_data("bronze", object_name, refs)
-        print(response)
 
         refs_list = []
-        for item in result["refs"]["items"]:
+        for item in refs["items"]:
             refs_list.append(item["$ref"])
         print(refs_list)
-        return {"page": page, "refs": refs_list}
 
-    @task
-    def extract_players(result: dict):
-        print(result)
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
-        page = result["page"]
-        refs = result["refs"]
         espn_client = EspnClient()
 
         players = []
+        print(refs)
+
         with ThreadPoolExecutor(max_workers=10) as pool:
             futures = {
-                pool.submit(espn_client.get_player_by_ref, ref): ref for ref in refs
+                pool.submit(espn_client.get_player_by_ref, ref): ref
+                for ref in refs_list
             }
             for future in as_completed(futures):
                 player = future.result()
@@ -75,29 +58,11 @@ def bronze_players():
 
         print(players)
 
-        return {"page": page, "players": players}
-
-    @task
-    def load_players(result: dict):
-        page, players = result["page"], result["players"]
         minio_client = MinioClient()
-        object_name = minio_client.get_players_object_name("players", page)
+        object_name = minio_client.get_players_object_name(page)
         minio_client.write_data("bronze", object_name, players)
 
-    @task
-    def cleanup():
-        print("cleaning")
-
-    (
-        load_players.expand(
-            result=extract_players.expand(
-                result=load_refs.expand(
-                    result=extract_refs.expand(values=delimit_pages())
-                )
-            )
-        )
-        >> cleanup()
-    )
+    extract_refs.expand(values=delimit_pages())
 
 
 bronze_players()

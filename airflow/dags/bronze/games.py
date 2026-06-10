@@ -27,13 +27,12 @@ def bronze_games():
 
         espn_client = EspnClient()
         response = espn_client.get_events(year, week)
-        ids = espn_client.get_event_ids(year, week)
 
         minio_client = MinioClient()
         object_name = minio_client.get_events_object_name(year, week)
         print(response)
         minio_client.write_data("bronze", object_name, response)
-        return ids
+        return espn_client.get_event_ids(response)
 
     @task
     def get_stats(game_id: str, **context):
