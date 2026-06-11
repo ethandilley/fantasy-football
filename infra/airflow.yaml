@@ -1,37 +1,52 @@
-executor: LocalExecutor
+executor: CeleryExecutor
 
 apiSecretKey: "d7b9586092839ef8871b5ed662d9bafcec2becf9b51a74d2ee79029c4cdd6e74"
 
 images:
   airflow:
-    repository: airflow
-    tag: latest
-    pullPolicy: Never
+    repository: 192.168.0.69:30500/airflow
+    tag: "1.0"
+    pullPolicy: Always
   pod_template:
-    repository: airflow
-    tag: latest
+    repository: 192.168.0.69:30500/airflow
+    tag: "1.0"
   statsd:
-    repository: airflow
-    tag: latest
+    repository: 192.168.0.69:30500/airflow
+    tag: "1.0"
 
 dags:
   gitSync:
     enabled: true
     repo: https://github.com/ethandilley/fantasy-football.git
-    branch: more-kaggle
+    branch: main
     subPath: "airflow/dags"
-    
+    recommendedProbeSetting: true
+
 redis:
-  enabled: false
+  enabled: true
+  nodeSelector:
+    kubernetes.io/hostname: stone
+
+data:
+  brokerUrlSecretName: airflow-broker-url-secret
+
 flower:
-  enabled: false
+  enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
 statsd:
   enabled: false
 
 postgresql:
-  nodeSelector:
-    kubernetes.io/hostname: bbbs
   primary:
+    nodeSelector:
+      kubernetes.io/hostname: stone
     resources:
       requests:
         cpu: 100m
@@ -46,9 +61,23 @@ logs:
   persistence:
     enabled: false
 
+workers:
+  celery:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 500m
+        memory: 3Gi
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+extraEnv: |
+  - name: AIRFLOW__CELERY__WORKER_LOG_SERVER_HOST
+    valueFrom:
+      fieldRef:
+        fieldPath: status.podIP
+
 apiServer:
-  nodeSelector:
-    kubernetes.io/hostname: bbbs
   livenessProbe:
     timeoutSeconds: 30
     periodSeconds: 30
@@ -63,22 +92,20 @@ apiServer:
     failureThreshold: 30
   resources:
     requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
       cpu: 1000m
       memory: 2Gi
-    limits:
-      cpu: 2000m
-      memory: 4Gi
 
 scheduler:
-  nodeSelector:
-    kubernetes.io/hostname: bbbs
   resources:
     requests:
-      cpu: 1000m
-      memory: 2Gi
+      cpu: 500m
+      memory: 1Gi
     limits:
-      cpu: 2000m
-      memory: 4Gi
+      cpu: 1000m
+      memory: 1Gi
   livenessProbe:
     timeoutSeconds: 60
     periodSeconds: 60
@@ -89,24 +116,24 @@ scheduler:
     failureThreshold: 30
 
 dagProcessor:
-  nodeSelector:
-    kubernetes.io/hostname: bbbs
   enabled: true
 
 config:
   AIRFLOW__CORE__LOAD_EXAMPLES:
     value: "false"
-  AIRFLOW__CORE__PARALLELISM:
-    value: "8"
-  AIRFLOW__CORE__DAG_CONCURRENCY:
-    value: "8"
-  AIRFLOW__SCHEDULER__MAX_THREADS:
-    value: "2"
-  AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL:
-    value: "60"
-  AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL:
-    value: "120"
-  AIRFLOW__DATABASE__SQL_ALCHEMY_POOL_SIZE:
-    value: "5"
-  AIRFLOW__DATABASE__SQL_ALCHEMY_MAX_OVERFLOW:
-    value: "5"
+#   AIRFLOW__CORE__PARALLELISM:
+#     value: "16"  # can run more in parallel now across workers
+#   AIRFLOW__CORE__DAG_CONCURRENCY:
+#     value: "16"
+#   AIRFLOW__CELERY__WORKER_CONCURRENCY:
+#     value: "8"  # tasks per worker at once; tune to your workload
+#   AIRFLOW__SCHEDULER__MAX_THREADS:
+#     value: "2"
+#   AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL:
+#     value: "60"
+#   AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL:
+#     value: "120"
+#   AIRFLOW__DATABASE__SQL_ALCHEMY_POOL_SIZE:
+#     value: "5"
+#   AIRFLOW__DATABASE__SQL_ALCHEMY_MAX_OVERFLOW:
+#     value: "5"

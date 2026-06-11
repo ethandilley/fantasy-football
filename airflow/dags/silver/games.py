@@ -27,15 +27,11 @@ def silver_games():
         objects = minio_client.fetch_game_objects("bronze", year, week)
         return [o.object_name for o in objects]
 
-    @task(multiple_outputs=False)
-    def extract(game_path: str) -> dict:
+    @task
+    def elt(game_path: str):
         print(game_path)
         minio_client = MinioClient()
-        game_info = minio_client.read_data("bronze", game_path)
-        return game_info
-
-    @task
-    def transform(data):
+        data = minio_client.read_data("bronze", game_path)
         print(data)
 
         header = data.get("header") or {}
@@ -58,16 +54,11 @@ def silver_games():
             "wind_speed": 5,
         }
 
-        return extracted_data
-
-    @task
-    def load(data):
-        print(data)
+        print(extracted_data)
         clickhouse_client = ClickhouseClient()
-        clickhouse_client.write_games(data)
+        clickhouse_client.write_games(extracted_data)
 
-    game_paths = fetch_games()
-    load.expand(data=transform.expand(data=extract.expand(game_path=game_paths)))
+    elt.expand(game_path=fetch_games())
 
 
 silver_games()

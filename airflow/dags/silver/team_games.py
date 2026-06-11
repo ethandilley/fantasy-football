@@ -33,33 +33,23 @@ def silver_team_games():
 
         return game_paths
 
-    @task(multiple_outputs=False)
+    @task
     def parse_games(game_path: str, **context):
         year = context["params"]["year"]
         week = context["params"]["week"]
-        print(year)
-        print(week)
         print(game_path)
 
         minio_client = MinioClient()
         game_info = minio_client.read_data("bronze", game_path)
-        print(game_info)
 
         game_id = int(game_path.split("game=")[1].split("/")[0])
         translator = EspnTranslator()
         teams = translator.to_team_stats(game_id, year, week, game_info)
-        print(teams)
 
-        return teams
-
-    @task
-    def load(teams_game: list[dict]):
         clickhouse_client = ClickhouseClient()
-        clickhouse_client.write_team_game_stats(teams_game)
+        clickhouse_client.write_team_game_stats(teams)
 
-    game_paths = fetch_games()
-    teams_games = parse_games.expand(game_path=game_paths)
-    load.expand(teams_game=teams_games)
+    parse_games.expand(game_path=fetch_games())
 
 
 silver_team_games()

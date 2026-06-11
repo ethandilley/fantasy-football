@@ -1,5 +1,3 @@
-# get number of total players
-# get split it up by page/limit
 import logging
 from datetime import datetime
 
@@ -13,7 +11,6 @@ logger = logging.getLogger(__name__)
 @dag(
     schedule="@daily",
     start_date=datetime(2023, 1, 1),
-    max_active_tasks=5,
 )
 def bronze_teams():
 
@@ -22,24 +19,20 @@ def bronze_teams():
         espn_client = EspnClient()
         response = espn_client.get_teams()
         refs = [item["$ref"] for item in response["items"]]
-        print(refs)
+        logger.info(refs)
         return refs
 
     @task
-    def extract_team(ref: str):
-        print(ref)
+    def extract_and_load_team(ref: str):
+        logger.info(ref)
         espn_client = EspnClient()
-        response = espn_client._get(ref)
-        return response
+        data = espn_client._get(ref)
 
-    @task
-    def load(data):
-        print(data)
         minio_client = MinioClient()
         object_path = minio_client.get_teams_object_name(data["id"])
         minio_client.write_data("bronze", object_path, data)
 
-    load.expand(data=extract_team.expand(ref=extract_refs()))
+    extract_and_load_team.expand(ref=extract_refs())
 
 
 bronze_teams()

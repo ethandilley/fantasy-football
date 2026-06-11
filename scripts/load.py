@@ -5,11 +5,11 @@ import os
 
 airflow_token = os.environ.get("AIRFLOW_TOKEN")
 dags = [
-    # ("bronze_games", 15),
-    # ("silver_team_games", 60),
-    # ("silver_player_games", 60),
-    ("silver_games", 20),
-    # ("gold_player_games", 60),
+    # ("bronze_games", 1),
+    # ("silver_team_games", 1),
+    # ("silver_player_games", 1),
+    ("silver_games", 1),
+    # ("gold_player_games", 1),
 ]
 
 BASE_URL = "http://localhost:8080/api/v2"
