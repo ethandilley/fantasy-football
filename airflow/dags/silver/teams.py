@@ -17,20 +17,21 @@ def silver_teams():
 
     @task
     def fetch_teams():
+        print("HI")
         minio_client = MinioClient()
-        today = str(date.today() - timedelta(1))
-        objects = minio_client.fetch_team_objects("bronze", today)
+        objects = minio_client.fetch_team_objects("bronze")
+        print(objects)
         object_names = [o.object_name for o in objects]
         return object_names
 
     @task
-    def extract(object_path: str):
+    def elt(object_path: str):
+        # extract
         minio_client = MinioClient()
         team = minio_client.read_data("bronze", object_path)
-        return team
+        print(team)
 
-    @task
-    def transform(team: dict):
+        # transform
         extracted_teams = {}
         name = team.get("name")
         extracted_team = {
@@ -38,16 +39,13 @@ def silver_teams():
             "espn_id": str(team.get("id", "")),
         }
         extracted_teams[name] = extracted_team
-        return [p for p in extracted_teams.values()]
 
-    @task
-    def load(teams: list[dict]):
+        # load
+        teams = [p for p in extracted_teams.values()]
         clickhouse_client = ClickhouseClient()
         clickhouse_client.write_teams(teams)
 
-    load.expand(
-        teams=transform.expand(team=extract.expand(object_path=fetch_teams()))
-    )
+    elt.expand(object_path=fetch_teams())
 
 
 silver_teams()
