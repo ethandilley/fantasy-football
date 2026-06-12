@@ -61,9 +61,12 @@ logs:
   persistence:
     enabled: false
 
+triggerer:
+  enabled: false
+
 workers:
   celery:
-    replicas: 2
+    replicas: 4
     resources:
       requests:
         cpu: 500m
@@ -71,6 +74,17 @@ workers:
       limits:
         cpu: 2000m
         memory: 4Gi
+    nodeSelector:
+      role: airflow-worker
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  component: worker
+              topologyKey: kubernetes.io/hostname
 extraEnv: |
   - name: AIRFLOW__CELERY__WORKER_LOG_SERVER_HOST
     valueFrom:
