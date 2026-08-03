@@ -5,6 +5,7 @@ services:
       - "8000:8000"
     volumes:
       - ./service/src:/app/src
+    restart: no
 
   minio:
     image: minio/minio:latest
@@ -18,7 +19,7 @@ services:
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
-    restart: unless-stopped
+    restart: no
 
   clickhouse:
     image: clickhouse/clickhouse-server:latest
@@ -33,6 +34,7 @@ services:
       - CLICKHOUSE_PASSWORD=default
     ulimits:
       nofile: {soft: 262144, hard: 262144}
+    restart: no
 
 volumes:
   minio_data:

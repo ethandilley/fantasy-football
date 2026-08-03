@@ -5,7 +5,7 @@ class DatasetRepository:
     def __init__(self, db: Client):
         self.db = db
 
-    def get_training(self, season: int, week: int, page: int, limit: int):
+    def get_training(self, season: int | None, week: int | None, page: int, limit: int):
         query = "select * from gold.playergame final where 1=1"
         if season:
             query = query + f" and season = {season}"
@@ -16,7 +16,7 @@ class DatasetRepository:
         result = self.db.query(query)
         return result
 
-    def get_testing(self, season: int, week: int, page: int, limit: int):
+    def get_testing(self, season: int | None, week: int | None, page: int, limit: int):
         query = """
         select
             id,

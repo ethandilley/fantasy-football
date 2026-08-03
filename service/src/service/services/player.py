@@ -26,6 +26,7 @@ class PlayerService:
 
     def get_stats(self, id: str):
         result = self.repo.get_stats(id)
+        print(result)
         columns = result.column_names
         rows = result.result_rows
         return [dict(zip(columns, row)) for row in rows]
