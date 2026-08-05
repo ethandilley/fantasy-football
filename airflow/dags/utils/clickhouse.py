@@ -150,3 +150,30 @@ class ClickhouseClient:
             rows,
             column_names=columns,
         )
+
+    def write_adp(self, data):
+        columns = [
+            "source",
+            "ffc_player_id",
+            "player_name",
+            "position",
+            "season",
+            "scoring_format",
+            "teams",
+            "adp",
+            "times_drafted",
+            "high",
+            "low",
+            "stdev",
+            "total_drafts",
+            "start_date",
+            "end_date",
+        ]
+        print(data)
+        rows = [[a[col] for col in columns] for a in data]
+        print(rows)
+        self.client.insert(
+            "silver.adp",
+            rows,
+            column_names=columns,
+        )

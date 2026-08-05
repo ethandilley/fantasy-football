@@ -67,6 +67,16 @@ class MinioClient:
             recursive=True,
         )
 
+    def fetch_adp_objects(self, bucket: str, year: int | None = None):
+        prefix = "ffc/raw/adp"
+        if year is not None:
+            prefix += f"/season={year}"
+        return self.client.list_objects(
+            bucket_name=bucket,
+            prefix=prefix,
+            recursive=True,
+        )
+
     def get_events_object_name(self, year: int, week: int):
         return f"espn/raw/events/season={year}/week={week}/data.json.gz"
 
@@ -78,3 +88,6 @@ class MinioClient:
 
     def get_teams_object_name(self, team_id) -> str:
         return f"espn/raw/teams/team_id={team_id}/data.json.gz"
+
+    def get_adp_object_name(self, year: int, scoring_format: str, teams: int) -> str:
+        return f"ffc/raw/adp/season={year}/format={scoring_format}/teams={teams}/data.json.gz"

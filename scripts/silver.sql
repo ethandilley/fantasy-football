@@ -110,4 +110,25 @@ CREATE TABLE silver.teamgamestats
 ENGINE = ReplacingMergeTree()
 ORDER BY (team_id, game_id);
 
-
+-- adp table
+CREATE OR REPLACE TABLE silver.adp
+(
+    id UUID DEFAULT generateUUIDv4(),
+    source String NOT NULL,
+    ffc_player_id Int NOT NULL,
+    player_name String NOT NULL,
+    position String,
+    season Int NOT NULL,
+    scoring_format String NOT NULL,
+    teams Int NOT NULL,
+    adp Float NOT NULL,
+    times_drafted Int,
+    high Int,
+    low Int,
+    stdev Float,
+    total_drafts Int,
+    start_date Date,
+    end_date Date
+)
+ENGINE = ReplacingMergeTree()
+ORDER BY (source, season, scoring_format, teams, ffc_player_id);

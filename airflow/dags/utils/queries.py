@@ -64,7 +64,8 @@ INSERT INTO gold.playergame
     turnovers,
     team_fumbles_lost, 
     possession_time_seconds,
-    fantasy_points
+    fantasy_points,
+    adp
 )
 SELECT
     p.name                      AS player_name,
@@ -77,10 +78,10 @@ SELECT
     p.draft_round,
     p.draft_selection,
     p.status,
- 
+
     t.name                      AS team_name,
     pgs.team_id,
- 
+
     g.espn_id                   AS game_id,
     g.slug                      AS game_slug,
     g.season,
@@ -93,7 +94,7 @@ SELECT
     g.weather_condition,
     g.temperature,
     g.wind_speed,
- 
+
     pgs.passing_attempts,
     pgs.passing_completions,
     pgs.passing_yards,
@@ -108,7 +109,7 @@ SELECT
     pgs.receiving_tds,
     pgs.fumbles,
     pgs.fumbles_lost,
- 
+
     tgs.home_away,
     tgs.first_downs,
     tgs.third_down_conversions,
@@ -139,13 +140,19 @@ SELECT
     + 0.04 * pgs.passing_yards
     + pgs.receptions
     - 2 * (pgs.interceptions + pgs.fumbles_lost)
-    AS fantasy_points
- 
-FROM silver.playergamestats pgs
-JOIN silver.players  p   ON p.espn_id  = pgs.player_id
-JOIN silver.games    g   ON g.espn_id  = pgs.game_id
-JOIN silver.teams    t   ON t.espn_id  = pgs.team_id
-JOIN silver.teamgamestats tgs
+    AS fantasy_points,
+    a.adp
+
+FROM silver.playergamestats AS pgs FINAL
+JOIN silver.players  AS p FINAL   ON p.espn_id  = pgs.player_id
+JOIN silver.games    AS g FINAL   ON g.espn_id  = pgs.game_id
+JOIN silver.teams    AS t FINAL   ON t.espn_id  = pgs.team_id
+JOIN silver.teamgamestats AS tgs FINAL
     ON  tgs.game_id = pgs.game_id
     AND tgs.team_id = pgs.team_id
+LEFT JOIN silver.adp AS a FINAL
+    ON  a.player_name = p.name
+    AND a.season = g.season
+    AND a.scoring_format = 'PPR'
+    AND a.teams = 12
 """

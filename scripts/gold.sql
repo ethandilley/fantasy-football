@@ -1,4 +1,3 @@
---  playergame table
 CREATE OR REPLACE TABLE gold.playergame
 (
     id UUID DEFAULT generateUUIDv4(),
@@ -70,11 +69,13 @@ CREATE OR REPLACE TABLE gold.playergame
     team_fumbles_lost Int NOT NULL,
     possession_time_seconds Int NOT NULL,
     -- calc
-    fantasy_points Float NOT NULL
+    fantasy_points Float NOT NULL,
+    -- adp (ffc, ppr, 12-team; joined on player_name + season, left join so historical
+    -- seasons without matching adp data are NULL rather than dropped)
+    adp Nullable(Float)
 )
 ENGINE = ReplacingMergeTree()
 ORDER BY (player_id, game_id);
-
 
 -- features built on player game
 CREATE OR REPLACE TABLE gold.playergame_features
