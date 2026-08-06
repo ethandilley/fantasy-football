@@ -5,11 +5,13 @@ BASE_URL = "https://fantasyfootballcalculator.com/api/v1"
 
 class FfcApiError(Exception):
     """Raised on network/HTTP failures - safe to retry."""
+
     pass
 
 
 class FfcNoDataError(FfcApiError):
     """Raised when FFC has no ADP data for the requested combo - not retryable."""
+
     pass
 
 
@@ -30,4 +32,6 @@ class FfcClient:
         return data
 
     def get_adp(self, scoring_format: str, teams: int, year: int) -> dict:
-        return self._get(f"/adp/{scoring_format}", params={"teams": teams, "year": year})
+        return self._get(
+            f"/adp/{scoring_format}", params={"teams": teams, "year": year}
+        )

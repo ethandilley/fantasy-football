@@ -132,3 +132,57 @@ CREATE OR REPLACE TABLE silver.adp
 )
 ENGINE = ReplacingMergeTree()
 ORDER BY (source, season, scoring_format, teams, ffc_player_id);
+
+-- sportsbook markets table
+CREATE OR REPLACE TABLE silver.markets
+(
+    id UUID DEFAULT generateUUIDv4(),
+    event_key String NOT NULL,
+    market_key String NOT NULL,
+    market_type String NOT NULL,       -- POINT_SPREAD, POINT_TOTAL, PLAYER_RECEPTIONS
+    segment String NOT NULL,            -- FULL_MATCH, FIRST_HALF, etc.
+    player_id Nullable(Int),
+    team_id Nullable(Int),
+    last_found_at DateTime NOT NULL
+)
+ENGINE = ReplacingMergeTree()
+ORDER BY (event_key, market_key);
+
+-- sportsbook odds table
+CREATE OR REPLACE TABLE silver.odds
+(
+    id UUID DEFAULT generateUUIDv4(),
+    event_key String NOT NULL,
+    market_key String NOT NULL,
+    sportsbook String NOT NULL,         -- DRAFT_KINGS, FAN_DUEL
+    market_type String NOT NULL,        -- POINT_SPREAD, PLAYER_RECEPTIONS
+    segment String NOT NULL,
+    participant_key String NOT NULL,
+    participant_name String NOT NULL,
+    -- for teams: SEA, NE
+    -- for players: player name
+    participant_type String NOT NULL,   -- TEAM / PLAYER
+    outcome_type String NOT NULL,       -- WIN, OVER, UNDER
+    line Float64,                       -- -3.5, 45.5, 72.5 yards
+    decimal_odds Float64 NOT NULL,      -- 1.909091
+    american_odds Int32,
+    live Boolean NOT NULL,
+    updated_at DateTime NOT NULL
+)
+ENGINE = ReplacingMergeTree(updated_at)
+ORDER BY
+(
+    event_key,
+    market_key,
+    sportsbook,
+    participant_key,
+    outcome_type
+);
+
+CREATE OR REPLACE TABLE silver.odds_events
+(
+    odds_event_key String NOT NULL,
+    espn_game_id Int NOT NULL
+)
+ENGINE = ReplacingMergeTree()
+ORDER BY odds_event_key;

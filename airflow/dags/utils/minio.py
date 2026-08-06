@@ -91,3 +91,9 @@ class MinioClient:
 
     def get_adp_object_name(self, year: int, scoring_format: str, teams: int) -> str:
         return f"ffc/raw/adp/season={year}/format={scoring_format}/teams={teams}/data.json.gz"
+
+    def get_sportsbook_events_object_name(self, league: str, year: int) -> str:
+        return f"sportsbook/{league}/season={year}/events/data.json.gz"
+
+    def get_sportsbook_outcomes_object_name(self, league: str, year: int, market_key: str) -> str:
+        return f"sportsbook/{league}/season={year}/outcomes/market_key={market_key}/data.json.gz"
